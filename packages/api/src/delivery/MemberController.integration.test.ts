@@ -18,6 +18,21 @@ vi.mock('../infrastructure/PostgresMemberRepository.js', () => {
     };
 });
 
+// Mockeamos PostgresSportRepository para que app.ts no falle al importarlo sin DATABASE_URL
+vi.mock('../infrastructure/PostgresSportRepository.js', () => {
+    return {
+        PostgresSportRepository: class {
+            async findAll() { return []; }
+            async findById() { return null; }
+            async findByName() { return null; }
+            async create(data: any) { return { id: 'sport-1', ...data }; }
+            async update(id: string, data: any) { return { id, ...data }; }
+            async delete() { return; }
+            async countDisciplines() { return 0; }
+        }
+    };
+});
+
 describe('Member API Integration Tests', () => {
     let app: FastifyInstance;
 

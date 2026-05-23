@@ -31,3 +31,30 @@ export interface UpdateMemberRequest {
   category?: MemberCategory;
   status?: MemberStatus;
 }
+
+// ==========================================
+// Sport
+// ==========================================
+export interface SportDTO {
+  id: string;           // UUID
+  name: string;
+  description?: string; // nullable
+  maxCapacity: number;
+  created_at: string;   // ISO date string
+}
+
+export interface SportDetailDTO extends SportDTO {
+  disciplineCount: number;
+}
+
+export interface CreateSportRequest {
+  name: string;
+  description?: string;
+  maxCapacity: number;
+}
+
+export interface UpdateSportRequest {
+  description?: string;
+  maxCapacity?: number;
+  // NOTE: name is intentionally excluded — it is immutable after creation
+}

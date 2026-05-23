@@ -36,3 +36,22 @@ model Member {
 
     @@map("members") // Para que en la DB la tabla se llame 'members' en minúscula
 }
+
+model Sport {
+    id          String       @id @default(uuid())
+    name        String       @unique
+    description String?
+    maxCapacity Int
+    created_at  DateTime     @default(now())
+    disciplines Discipline[]
+
+    @@map("sports")
+}
+
+model Discipline {
+    id      String @id @default(uuid())
+    sportId String
+    sport   Sport  @relation(fields: [sportId], references: [id])
+
+    @@map("disciplines")
+}
