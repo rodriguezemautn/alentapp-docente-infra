@@ -58,3 +58,47 @@ export interface UpdateSportRequest {
   maxCapacity?: number;
   // NOTE: name is intentionally excluded — it is immutable after creation
 }
+
+// ==========================================
+// Payment
+// ==========================================
+export type PaymentType = 'Cuota' | 'Mensualidad' | 'Inscripcion' | 'Otro';
+export type PaymentStatus = 'Completed' | 'Canceled';
+
+export interface PaymentDTO {
+  id: string;
+  memberId: string;
+  amount: number;
+  paymentDate: string;
+  paymentType: PaymentType;
+  status: PaymentStatus;
+  created_at: string;
+}
+
+export interface PaymentDetailDTO extends PaymentDTO {
+  memberName: string;
+}
+
+export interface CreatePaymentRequest {
+  memberId: string;
+  amount: number;
+  paymentDate?: string;
+  paymentType: PaymentType;
+}
+
+export interface PaymentFilters {
+  memberId?: string;
+  paymentType?: PaymentType;
+  status?: PaymentStatus;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
