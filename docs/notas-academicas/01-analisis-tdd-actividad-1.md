@@ -56,15 +56,20 @@ Esto es un excelente ejemplo para discutir en clase:
 
 ### 4. Discrepancias Detectadas (para tratar en clase)
 
-#### a) Categorías de EquipmentLoan vs MemberCategory
-La regla de negocio de EquipmentLoan dice: "Solo socios Senior o Lifetime pueden recibir préstamos; Cadet no." Pero el modelo actual de `MemberCategory` usa: `Pleno | Cadete | Honorario`.
+#### a) Categorías de membresía vs. categorías deportivas ⚡ (CORREGIDO)
 
-Posibles enfoques para resolver:
-1. **Mapeo semántico**: Pleno→Senior, Honorario→Lifetime, Cadete→Cadet (traducción ES→EN)
-2. **Extender el enum**: Agregar Senior y Lifetime al MemberCategory (incompatible con Member actual)
-3. **Regla de negocio por lista blanca**: Definir qué categorías pueden acceder a préstamos como una lista configurable fuera del código
+Inicialmente este análisis asumió que `MemberCategory` (Pleno, Cadete, Honorario) y las categorías de EquipmentLoan (Senior, Lifetime, Cadet) eran el mismo concepto. **No lo son.** Son dos dominios ortogonales:
 
-**Recomendación**: Discutir con los estudiantes que las reglas de negocio vienen del negocio (en español) pero el modelo técnico puede usar otros nombres. No asumir que están sincronizados — el TDD debe explicitar la decisión de diseño.
+| Dominio | Enum | Propósito |
+|---------|------|-----------|
+| Membresía del club | `MemberCategory`: Pleno, Cadete, Honorario | Vínculo del socio con el club (cuota, derechos, voz y voto) |
+| Ámbito deportivo | `SportCategory`: Senior, Lifetime, Cadet | Elegibilidad para actividades deportivas y préstamo de material |
+
+Un socio puede ser "Honorario" en membresía y "Cadet" en lo deportivo. O "Pleno" y "Senior".
+
+**Corrección aplicada**: El TDD-0009 ahora introduce `SportCategory` como un enum nuevo e independiente, y extiende `Member` con un campo `sportCategory?`. La validación de EquipmentLoan consulta `SportCategory`, no `MemberCategory`.
+
+**Para discutir en clase**: Este error de interpretación es un ejemplo clásico de cómo los nombres similares pueden confundir dominios distintos. Lección: siempre preguntar "¿son el mismo concepto?" antes de modelar.
 
 #### b) Migraciones redundantes
 El historial de migraciones de Member muestra:

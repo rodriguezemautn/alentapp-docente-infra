@@ -23,27 +23,40 @@ Gestionar el préstamo de material deportivo a los socios del club (pelotas, raq
 
 - El sistema debe permitir registrar un préstamo de equipamiento a un socio.
 - El sistema debe validar que el socio exista.
-- El sistema debe validar que la categoría del socio **no sea "Cadete"** (solo socios "Pleno" u "Honorario" pueden recibir préstamos).
+- El sistema debe validar que la **categoría deportiva** del socio habilite el préstamo.
 - El sistema debe permitir registrar la devolución del material.
 - El sistema debe registrar si un material se perdió o no fue devuelto.
 - El sistema debe listar los préstamos activos y el historial por socio.
 
-> **⚠️ Nota sobre categorías**: La regla de negocio original de la Actividad 1 menciona categorías "Senior", "Lifetime" y "Cadet". El modelo actual de `MemberCategory` utiliza "Pleno", "Cadete", "Honorario". Este TDD mapea la regla usando las categorías existentes del sistema, donde "Pleno" y "Honorario" son las categorías habilitadas para préstamos. Si se requieren los valores originales del DER, el enum `MemberCategory` deberá extenderse.
+> **ℹ️ Categorías de membresía vs. categorías deportivas**: Este TDD introduce `SportCategory`, un enum nuevo e independiente de `MemberCategory`. Mientras que `MemberCategory` (Pleno, Cadete, Honorario) refleja el vínculo del socio con el club, `SportCategory` (Senior, Lifetime, Cadet) clasifica al socio en el ámbito deportivo. Son ortogonales — un socio puede ser "Honorario" y "Cadet" a la vez.
 
 ## Diseño Técnico (RFC)
 
 ### Modelo de Datos
 
-Se creará la entidad `EquipmentLoan` con las siguientes propiedades y restricciones:
+Se agregará el enum `SportCategory` al modelo existente `Member` (nuevo campo) y se creará la entidad `EquipmentLoan`.
 
-- `id`: Identificador único universal (UUID).
-- `memberId`: Relación con el socio (UUID, clave foránea).
-- `equipmentName`: Nombre o descripción del material prestado.
-- `loanDate`: Fecha y hora del préstamo (por defecto la fecha actual).
-- `returnDate`: Fecha de devolución (nullable, se completa al devolver).
-- `status`: Estado del préstamo (Active, Returned, Lost). Por defecto `Active`.
-- `notes`: Notas u observaciones (opcional).
-- `created_at`: Fecha de creación autogenerada.
+**Nuevo enum** (ámbito deportivo, independiente de `MemberCategory`):
+
+```prisma
+enum SportCategory {
+    Senior
+    Lifetime
+    Cadet
+}
+```
+
+**Extensión al modelo `Member` existente** (nueva migración):
+
+```prisma
+model Member {
+    // ... campos existentes (id, dni, name, email, birthdate, category, status, created_at)
+    sportCategory SportCategory?  // nuevo: categoría deportiva del socio (nullable)
+    // ...
+}
+```
+
+**Nueva entidad `EquipmentLoan`**:
 
 ```prisma
 enum LoanStatus {
@@ -69,9 +82,19 @@ model EquipmentLoan {
 
 ### Contrato de API (@alentapp/shared)
 
-Endpoint base: `/api/v1/prestamos-equipamiento`
+Se agrega `SportCategory` al paquete compartido y se extiende `MemberDTO` con el nuevo campo.
 
 ```ts
+// --- Nuevo tipo ---
+export type SportCategory = 'Senior' | 'Lifetime' | 'Cadet';
+
+// --- Extensión a MemberDTO existente ---
+export interface MemberDTO {
+    // ... campos existentes
+    sportCategory?: SportCategory;  // nuevo, opcional
+}
+
+// --- EquipmentLoan ---
 export type LoanStatus = 'Active' | 'Returned' | 'Lost';
 
 export interface EquipmentLoanDTO {
@@ -109,9 +132,9 @@ export interface ReturnEquipmentLoanRequest {
 ### Componentes de Arquitectura Hexagonal
 
 1. **Puerto**: `EquipmentLoanRepository` (Interface: `create`, `findById`, `findAll`, `update`).
-2. **Servicio de Dominio**: `EquipmentLoanValidator` (Valida existencia del socio, restricción por categoría, que el préstamo no esté ya devuelto/perdido antes de operar).
+2. **Servicio de Dominio**: `EquipmentLoanValidator` (Valida existencia del socio, restricción por categoría deportiva — `sportCategory` debe ser `Senior` o `Lifetime`, no `Cadet` —, que el préstamo no esté ya devuelto/perdido antes de operar).
 3. **Casos de Uso**:
-   - `CreateEquipmentLoanUseCase` (Crea el préstamo tras validar categoría del socio).
+   - `CreateEquipmentLoanUseCase` (Crea el préstamo tras validar la categoría deportiva del socio).
    - `GetEquipmentLoansUseCase` (Lista con filtros).
    - `ReturnEquipmentLoanUseCase` (Registra devolución).
    - `ReportLostEquipmentLoanUseCase` (Marca como perdido).
@@ -123,7 +146,8 @@ export interface ReturnEquipmentLoanRequest {
 | Escenario                                      | Resultado Esperado                                           | Código HTTP |
 |------------------------------------------------|--------------------------------------------------------------|-------------|
 | Socio inexistente                              | Mensaje: "El socio no existe"                                | 404 Not Found |
-| Socio categoría "Cadete"                       | Mensaje: "Los socios categoría Cadete no pueden solicitar préstamos de equipamiento" | 403 Forbidden |
+| Socio con categoría deportiva "Cadet"          | Mensaje: "Los socios categoría Cadet no pueden solicitar préstamos de equipamiento" | 403 Forbidden |
+| Socio sin categoría deportiva asignada         | Mensaje: "El socio no tiene una categoría deportiva asignada"                       | 400 Bad Request |
 | Devolver un préstamo ya devuelto               | Mensaje: "El préstamo ya fue devuelto"                       | 400 Bad Request |
 | Reportar como perdido un préstamo ya devuelto  | Mensaje: "El préstamo ya fue devuelto"                       | 400 Bad Request |
 | Reportar como perdido un préstamo ya perdido   | Mensaje: "El préstamo ya fue reportado como perdido"         | 400 Bad Request |
@@ -132,14 +156,16 @@ export interface ReturnEquipmentLoanRequest {
 
 ## Plan de Implementación
 
-1. Agregar modelos `EquipmentLoan` y `LoanStatus` al schema de Prisma y crear migración.
-2. Definir tipos compartidos (`EquipmentLoanDTO`, `CreateEquipmentLoanRequest`, `ReturnEquipmentLoanRequest`) en `@alentapp/shared`.
-3. Crear el puerto `EquipmentLoanRepository` en `domain/`.
-4. Implementar el servicio de dominio `EquipmentLoanValidator` (validación de categoría del socio, estados válidos para transición).
-5. Implementar los casos de uso (creación, listado, devolución, reporte de pérdida).
-6. Implementar `PostgresEquipmentLoanRepository` en infraestructura.
-7. Crear `EquipmentLoanController` con rutas GET, POST, PUT return y PUT report-lost en Fastify.
-8. Registrar rutas y dependencias en `app.ts`.
-9. Crear `equipmentLoansService` en el frontend.
-10. Crear vista `EquipmentLoansView` con tabla de préstamos activos/historial, modal de creación con selector de socio, y botones de devolución/reportar pérdida.
-11. Agregar ruta `/prestamos-equipamiento` en el router del frontend.
+1. Agregar enum `SportCategory` y campo `sportCategory` al modelo `Member` en Prisma, y crear migración.
+2. Agregar modelos `EquipmentLoan` y `LoanStatus` al schema de Prisma, y crear migración.
+3. Agregar tipo `SportCategory` a `@alentapp/shared` y extender `MemberDTO` con `sportCategory?`.
+4. Definir tipos compartidos (`EquipmentLoanDTO`, `CreateEquipmentLoanRequest`, `ReturnEquipmentLoanRequest`) en `@alentapp/shared`.
+5. Crear el puerto `EquipmentLoanRepository` en `domain/`.
+6. Implementar el servicio de dominio `EquipmentLoanValidator` (validación de categoría deportiva del socio, estados válidos para transición).
+7. Implementar los casos de uso (creación, listado, devolución, reporte de pérdida).
+8. Implementar `PostgresEquipmentLoanRepository` en infraestructura.
+9. Crear `EquipmentLoanController` con rutas GET, POST, PUT return y PUT report-lost en Fastify.
+10. Registrar rutas y dependencias en `app.ts`.
+11. Crear `equipmentLoansService` en el frontend.
+12. Crear vista `EquipmentLoansView` con tabla de préstamos activos/historial, modal de creación con selector de socio, y botones de devolución/reportar pérdida.
+13. Agregar ruta `/prestamos-equipamiento` en el router del frontend.
