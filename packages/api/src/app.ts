@@ -14,6 +14,13 @@ import { GetSportsUseCase } from './application/GetSportsUseCase.js';
 import { UpdateSportUseCase } from './application/UpdateSportUseCase.js';
 import { DeleteSportUseCase } from './application/DeleteSportUseCase.js';
 import { SportController } from './delivery/SportController.js';
+import { PostgresPaymentRepository } from './infrastructure/PostgresPaymentRepository.js';
+import { PaymentValidator } from './domain/services/PaymentValidator.js';
+import { CreatePaymentUseCase } from './application/CreatePaymentUseCase.js';
+import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
+import { GetPaymentByIdUseCase } from './application/GetPaymentByIdUseCase.js';
+import { CancelPaymentUseCase } from './application/CancelPaymentUseCase.js';
+import { PaymentController } from './delivery/PaymentController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -74,6 +81,26 @@ export function buildApp() {
     server.get('/api/v1/sports', sportController.getAll.bind(sportController));
     server.put('/api/v1/sports/:id', sportController.update.bind(sportController));
     server.delete('/api/v1/sports/:id', sportController.delete.bind(sportController));
+
+    const paymentRepo = new PostgresPaymentRepository();
+    const paymentValidator = new PaymentValidator();
+
+    const createPaymentUseCase = new CreatePaymentUseCase(paymentRepo, memberRepo, paymentValidator);
+    const getPaymentsUseCase = new GetPaymentsUseCase(paymentRepo, paymentValidator);
+    const getPaymentByIdUseCase = new GetPaymentByIdUseCase(paymentRepo);
+    const cancelPaymentUseCase = new CancelPaymentUseCase(paymentRepo, paymentValidator);
+
+    const paymentController = new PaymentController(
+        createPaymentUseCase,
+        getPaymentsUseCase,
+        getPaymentByIdUseCase,
+        cancelPaymentUseCase,
+    );
+
+    server.post('/api/v1/pagos', paymentController.create.bind(paymentController));
+    server.get('/api/v1/pagos', paymentController.getAll.bind(paymentController));
+    server.get('/api/v1/pagos/:id', paymentController.getById.bind(paymentController));
+    server.put('/api/v1/pagos/:id/cancel', paymentController.cancel.bind(paymentController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })

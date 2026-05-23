@@ -33,6 +33,7 @@ model Member {
     category   MemberCategory
     status     MemberStatus   @default(Activo)
     created_at DateTime       @default(now())
+    payments   Payment[]
 
     @@map("members") // Para que en la DB la tabla se llame 'members' en minúscula
 }
@@ -54,4 +55,29 @@ model Discipline {
     sport   Sport  @relation(fields: [sportId], references: [id])
 
     @@map("disciplines")
+}
+
+enum PaymentType {
+    Cuota
+    Mensualidad
+    Inscripcion
+    Otro
+}
+
+enum PaymentStatus {
+    Completed
+    Canceled
+}
+
+model Payment {
+    id          String        @id @default(uuid())
+    memberId    String
+    member      Member        @relation(fields: [memberId], references: [id])
+    amount      Decimal       @db.Decimal(10, 2)
+    paymentDate DateTime      @default(now())
+    paymentType PaymentType
+    status      PaymentStatus @default(Completed)
+    created_at  DateTime      @default(now())
+
+    @@map("payments")
 }
