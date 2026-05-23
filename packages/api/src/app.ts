@@ -21,6 +21,11 @@ import { GetPaymentsUseCase } from './application/GetPaymentsUseCase.js';
 import { GetPaymentByIdUseCase } from './application/GetPaymentByIdUseCase.js';
 import { CancelPaymentUseCase } from './application/CancelPaymentUseCase.js';
 import { PaymentController } from './delivery/PaymentController.js';
+import { PostgresMedicalCertificateRepository } from './infrastructure/PostgresMedicalCertificateRepository.js';
+import { MedicalCertificateValidator } from './domain/services/MedicalCertificateValidator.js';
+import { CreateMedicalCertificateUseCase } from './application/CreateMedicalCertificateUseCase.js';
+import { GetActiveMedicalCertificateUseCase } from './application/GetActiveMedicalCertificateUseCase.js';
+import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -101,6 +106,20 @@ export function buildApp() {
     server.get('/api/v1/pagos', paymentController.getAll.bind(paymentController));
     server.get('/api/v1/pagos/:id', paymentController.getById.bind(paymentController));
     server.put('/api/v1/pagos/:id/cancel', paymentController.cancel.bind(paymentController));
+
+    const mcRepo = new PostgresMedicalCertificateRepository();
+    const mcValidator = new MedicalCertificateValidator();
+
+    const createMedicalCertificateUseCase = new CreateMedicalCertificateUseCase(mcRepo, mcValidator, memberRepo);
+    const getActiveMedicalCertificateUseCase = new GetActiveMedicalCertificateUseCase(mcRepo);
+
+    const medicalCertificateController = new MedicalCertificateController(
+        createMedicalCertificateUseCase,
+        getActiveMedicalCertificateUseCase,
+    );
+
+    server.post('/api/v1/certificados-medicos', medicalCertificateController.create.bind(medicalCertificateController));
+    server.get('/api/v1/certificados-medicos/activo/:memberId', medicalCertificateController.getActive.bind(medicalCertificateController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
