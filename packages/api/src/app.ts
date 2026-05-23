@@ -26,6 +26,14 @@ import { MedicalCertificateValidator } from './domain/services/MedicalCertificat
 import { CreateMedicalCertificateUseCase } from './application/CreateMedicalCertificateUseCase.js';
 import { GetActiveMedicalCertificateUseCase } from './application/GetActiveMedicalCertificateUseCase.js';
 import { MedicalCertificateController } from './delivery/MedicalCertificateController.js';
+import { PostgresDisciplineRepository } from './infrastructure/PostgresDisciplineRepository.js';
+import { DisciplineValidator } from './domain/services/DisciplineValidator.js';
+import { CreateDisciplineUseCase } from './application/CreateDisciplineUseCase.js';
+import { GetDisciplinesUseCase } from './application/GetDisciplinesUseCase.js';
+import { GetDisciplineByIdUseCase } from './application/GetDisciplineByIdUseCase.js';
+import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
+import { DeleteDisciplineUseCase } from './application/DeleteDisciplineUseCase.js';
+import { DisciplineController } from './delivery/DisciplineController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -120,6 +128,29 @@ export function buildApp() {
 
     server.post('/api/v1/certificados-medicos', medicalCertificateController.create.bind(medicalCertificateController));
     server.get('/api/v1/certificados-medicos/activo/:memberId', medicalCertificateController.getActive.bind(medicalCertificateController));
+
+    const disciplineRepo = new PostgresDisciplineRepository();
+    const disciplineValidator = new DisciplineValidator(sportRepo);
+
+    const createDisciplineUseCase = new CreateDisciplineUseCase(disciplineRepo, disciplineValidator);
+    const getDisciplinesUseCase = new GetDisciplinesUseCase(disciplineRepo);
+    const getDisciplineByIdUseCase = new GetDisciplineByIdUseCase(disciplineRepo);
+    const updateDisciplineUseCase = new UpdateDisciplineUseCase(disciplineRepo, disciplineValidator);
+    const deleteDisciplineUseCase = new DeleteDisciplineUseCase(disciplineRepo);
+
+    const disciplineController = new DisciplineController(
+      createDisciplineUseCase,
+      getDisciplinesUseCase,
+      getDisciplineByIdUseCase,
+      updateDisciplineUseCase,
+      deleteDisciplineUseCase,
+    );
+
+    server.post('/api/v1/disciplinas', disciplineController.create.bind(disciplineController));
+    server.get('/api/v1/disciplinas', disciplineController.getAll.bind(disciplineController));
+    server.get('/api/v1/disciplinas/:id', disciplineController.getById.bind(disciplineController));
+    server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
+    server.delete('/api/v1/disciplinas/:id', disciplineController.delete.bind(disciplineController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
