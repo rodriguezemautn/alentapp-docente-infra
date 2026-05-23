@@ -3,6 +3,14 @@ import { PrismaClient } from '../generated/client/client.js';
 import { SportRepository } from '../domain/SportRepository.js';
 import { SportDTO, SportDetailDTO, CreateSportRequest, UpdateSportRequest } from '@alentapp/shared';
 
+if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is not set');
+}
+
+const prisma = new PrismaClient({
+    adapter: new PrismaPg(process.env.DATABASE_URL),
+});
+
 type DBSport = {
     id: string;
     name: string;
@@ -12,22 +20,8 @@ type DBSport = {
 };
 
 export class PostgresSportRepository implements SportRepository {
-    private prisma: PrismaClient | null = null;
-
-    private get client(): PrismaClient {
-        if (!this.prisma) {
-            if (!process.env.DATABASE_URL) {
-                throw new Error('DATABASE_URL environment variable is not set');
-            }
-            this.prisma = new PrismaClient({
-                adapter: new PrismaPg(process.env.DATABASE_URL),
-            });
-        }
-        return this.prisma;
-    }
-
     async create(data: CreateSportRequest): Promise<SportDTO> {
-        const sport = await this.client.sport.create({
+        const sport = await prisma.sport.create({
             data: {
                 name: data.name,
                 description: data.description || null,
@@ -38,17 +32,17 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async findById(id: string): Promise<SportDTO | null> {
-        const sport = await this.client.sport.findUnique({ where: { id } });
+        const sport = await prisma.sport.findUnique({ where: { id } });
         return sport ? this.mapToDTO(sport) : null;
     }
 
     async findByName(name: string): Promise<SportDTO | null> {
-        const sport = await this.client.sport.findUnique({ where: { name } });
+        const sport = await prisma.sport.findUnique({ where: { name } });
         return sport ? this.mapToDTO(sport) : null;
     }
 
     async findAll(): Promise<SportDetailDTO[]> {
-        const sports = await this.client.sport.findMany({
+        const sports = await prisma.sport.findMany({
             orderBy: { created_at: 'desc' },
             include: {
                 _count: {
@@ -63,7 +57,7 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async update(id: string, data: UpdateSportRequest): Promise<SportDTO> {
-        const sport = await this.client.sport.update({
+        const sport = await prisma.sport.update({
             where: { id },
             data: {
                 ...(data.description !== undefined && { description: data.description }),
@@ -74,11 +68,11 @@ export class PostgresSportRepository implements SportRepository {
     }
 
     async delete(id: string): Promise<void> {
-        await this.client.sport.delete({ where: { id } });
+        await prisma.sport.delete({ where: { id } });
     }
 
     async countDisciplines(sportId: string): Promise<number> {
-        const count = await this.client.discipline.count({
+        const count = await prisma.discipline.count({
             where: { sportId },
         });
         return count;
