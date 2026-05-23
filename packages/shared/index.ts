@@ -102,3 +102,24 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
 }
+
+// ==========================================
+// Medical Certificate
+// ==========================================
+export interface MedicalCertificateDTO {
+  id: string;
+  memberId: string;
+  issueDate: string;
+  expirationDate?: string;
+  isActive: boolean;
+  description?: string;
+  doctorName?: string;
+  created_at: string;
+}
+
+export interface CreateMedicalCertificateRequest {
+  memberId: string;
+  expirationDate?: string;
+  description?: string;
+  doctorName?: string;
+}

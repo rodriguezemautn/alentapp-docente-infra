@@ -33,7 +33,8 @@ model Member {
     category   MemberCategory
     status     MemberStatus   @default(Activo)
     created_at DateTime       @default(now())
-    payments   Payment[]
+    payments            Payment[]
+    medicalCertificates  MedicalCertificate[]
 
     @@map("members") // Para que en la DB la tabla se llame 'members' en minúscula
 }
@@ -80,4 +81,18 @@ model Payment {
     created_at  DateTime      @default(now())
 
     @@map("payments")
+}
+
+model MedicalCertificate {
+    id              String    @id @default(uuid())
+    memberId        String
+    member          Member    @relation(fields: [memberId], references: [id])
+    issueDate       DateTime  @default(now())
+    expirationDate  DateTime?
+    isActive        Boolean   @default(true)
+    description     String?
+    doctorName      String?
+    created_at      DateTime  @default(now())
+
+    @@map("medical_certificates")
 }
