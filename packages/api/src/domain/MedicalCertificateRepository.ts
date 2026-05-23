@@ -9,4 +9,7 @@ export interface MedicalCertificateRepository {
     ): Promise<MedicalCertificateDTO>;
     findActiveByMember(memberId: string): Promise<MedicalCertificateDTO | null>;
     deactivateAllByMember(memberId: string): Promise<void>;
+    createWithDeactivation(
+        data: CreateMedicalCertificateRequest,
+    ): Promise<MedicalCertificateDTO>;
 }
