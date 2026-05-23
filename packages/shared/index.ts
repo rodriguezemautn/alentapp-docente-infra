@@ -104,6 +104,44 @@ export interface PaginatedResponse<T> {
 }
 
 // ==========================================
+// Discipline
+// ==========================================
+export interface DisciplineDTO {
+  id: string;
+  sportId: string;
+  name: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  schedule?: string;
+  professor?: string;
+  created_at: string;
+}
+
+export interface DisciplineDetailDTO extends DisciplineDTO {
+  sportName?: string;
+}
+
+export interface CreateDisciplineRequest {
+  sportId: string;
+  name: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  schedule?: string;
+  professor?: string;
+}
+
+export interface UpdateDisciplineRequest {
+  name?: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  schedule?: string;
+  professor?: string;
+}
+
+// ==========================================
 // Medical Certificate
 // ==========================================
 export interface MedicalCertificateDTO {
