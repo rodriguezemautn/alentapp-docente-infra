@@ -25,3 +25,6 @@ Object.defineProperty(window, 'ResizeObserver', {
   configurable: true,
   value: ResizeObserverMock,
 });
+
+// zag-js (used by Chakra Select) calls scrollTo internally in jsdom
+Element.prototype.scrollTo = () => {};
