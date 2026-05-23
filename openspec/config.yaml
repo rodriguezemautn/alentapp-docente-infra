@@ -1,0 +1,82 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Project: alentapp-docente-infra
+  Stack: Node.js 22+, TypeScript 6.0 (strict), npm workspaces monorepo
+  Backend: Fastify 5, Prisma 7, PostgreSQL 16, hexagonal architecture (delivery → application → domain → infrastructure)
+  Frontend: React 19, Chakra UI 3, Vite 8, React Router 7
+  Shared: @alentapp/shared DTOs
+  Architecture: Hexagonal (ports & adapters) in packages/api, component-based in packages/web
+  Testing: Vitest 4 (unit + integration), Playwright 1.59 (E2E)
+  DevOps: Docker Compose (dev + e2e), PostgreSQL 16 Alpine
+  Note: packages/core not found — may be planned but not created yet
+
+strict_tdd: true
+
+testing:
+  strict_tdd: true
+  test_runner: vitest
+  test_command: "npx vitest run"
+  test_layers:
+    unit:
+      available: true
+      tool: vitest
+      patterns:
+        - "**/*.test.ts"
+        - "**/*.test.tsx"
+    integration:
+      available: true
+      tool: vitest
+      patterns:
+        - "**/*.integration.test.ts"
+    e2e:
+      available: true
+      tool: playwright
+      patterns:
+        - "**/*.e2e.test.ts"
+        - "**/*.spec.ts"
+        - "e2e-fullstack/**"
+  coverage:
+    available: true
+    command: "npx vitest run --coverage"
+    tool: "@vitest/coverage-v8"
+  quality:
+    linter:
+      tool: eslint
+      command: "npx eslint ."
+      config: ".eslintrc.js"
+    type_checker:
+      tool: typescript
+      command: "npx tsc --noEmit"
+    formatter:
+      tool: prettier
+      command: "npx prettier --check ."
+      config: ".prettierrc.json"
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Frame in terms of user/codebase value
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Delta specs only; reference main specs for unchanged context
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Respect hexagonal architecture layers in api
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+    - Prefix api tasks with [api], web with [web], shared with [shared]
+  apply:
+    - Follow existing code patterns per package
+    tdd: true
+    test_command: "npx vitest run --reporter=verbose"
+  verify:
+    test_command: "npx vitest run"
+    build_command: "npx tsc --noEmit"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
