@@ -543,4 +543,90 @@ Definidos en `domain/errors.ts` — todos los casos de uso lanzan estos errores,
 
 ---
 
-> **Mantenimiento**: Al agregar una nueva entidad, agregar una fila en cada tabla de este documento (Puertos, Adaptadores, Casos de Uso, DTOs, Frontend). Los diagramas Mermaid se renderizan automáticamente en GitHub.
+## 14. Testing — Pirámide y Estrategia
+
+```mermaid
+graph TB
+    subgraph TestingPyramid["🧪 Pirámide de Testing"]
+        E2E["E2E (Playwright)<br/>Flujos completos en navegador"]
+        INT["Integración (Vitest)<br/>Fastify inject + mock repos"]
+        UNIT["Unitarios (Vitest)<br/>Validators, Use Cases, Views"]
+        TSC["Type Checking (tsc)<br/>Compilación completa"]
+    end
+
+    E2E --> INT --> UNIT --> TSC
+```
+
+### 14.1. Tests por Capa Hexagonal
+
+| Capa Hexagonal | Tipo de Test | Archivo de Test | Cantidad |
+|---|---|---|---|
+| **Domain** (validators) | Unitario | `domain/services/*Validator.test.ts` | 5 archivos |
+| **Application** (use cases) | Unitario | `application/*UseCase.test.ts` | 14 archivos |
+| **Delivery** (controllers) | Unitario + Integración | `delivery/*Controller.test.ts` + `*.integration.test.ts` | 8 archivos |
+| **Infrastructure** (repos) | — | (cubierto por integración) | — |
+| **Frontend views** | Unitario (UI) | `views/*.test.tsx` | 7 archivos |
+| **Frontend components** | Unitario | `components/*.test.tsx` | 1 archivo |
+| **E2E** | Full-stack | `e2e-fullstack/*.spec.ts`, `e2e/*.spec.ts`, `delivery/*.e2e.test.ts` | 3 archivos |
+
+### 14.2. Inventario Actual (238 tests)
+
+| Estado | Cantidad |
+|---|---|
+| ✅ Pasando | 197 |
+| ❌ Fallando | 41 |
+| **Total** | **238** |
+
+**Distribución por paquete:**
+
+| Paquete | Tests | Estado |
+|---|---|---|
+| `packages/api` | 197 tests | ✅ Pasan (desde API vitest config) |
+| `packages/web` | 41 tests | ❌ Fallan por config (jsdom) — ejecutar con `npm -w packages/web run test` |
+
+### 14.3. Patrones de Testing
+
+| Patrón | Archivo de Referencia | Técnica |
+|---|---|---|
+| **Validator test** | `SportValidator.test.ts` | Función pura, sin mocks, ~2ms por test |
+| **Use Case test** | `CreateSportUseCase.test.ts` | Mock del puerto (interfaz), inyectar en constructor |
+| **Controller unit test** | `SportController.test.ts` | Mock de use cases con `vi.fn()`, verificar HTTP |
+| **Controller integration** | `SportController.integration.test.ts` | `app.inject()` sin servidor, mock repository |
+| **Frontend view test** | `Sports.test.tsx` | Testing Library + `userEvent`, mock service |
+| **E2E** | `members.spec.ts` (web), `members.fullstack.spec.ts` | Playwright + Docker (full-stack) |
+
+### 14.4. Stack de Testing
+
+| Herramienta | Propósito | Comando |
+|---|---|---|
+| Vitest 4 | Test runner (unit + integration) | `npm test` |
+| @testing-library/react | Renderizar React en tests | — |
+| @testing-library/user-event | Simular interacción del usuario | — |
+| jsdom | Entorno browser en Node.js | — |
+| Playwright 1.59 | E2E browser automation | `npm run test:e2e` |
+| @vitest/coverage-v8 | Reporte de cobertura | `npm run test:coverage` |
+| ESLint 9 | Static analysis | — |
+| TypeScript 6 | Type checking | `npx tsc --noEmit` |
+
+### 14.5. Cómo Ejecutar
+
+```bash
+# Todos los tests
+npm test
+
+# Tests por paquete
+npm run test:api
+npm run test:web
+
+# Coverage
+npm run test:coverage
+
+# TUI interactivo
+bash scripts/test-runner.sh
+```
+
+Para más detalle, ver `docs/testing/strategy.md`.
+
+---
+
+> **Mantenimiento**: Al agregar una nueva entidad, agregar una fila en cada tabla de este documento (Puertos, Adaptadores, Casos de Uso, DTOs, Frontend, Tests). Los diagramas Mermaid se renderizan automáticamente en GitHub.
