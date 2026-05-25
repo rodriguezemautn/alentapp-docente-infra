@@ -4,7 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:api && npm run test:web",
+    "test:api": "npm -w packages/api run test",
+    "test:web": "npm -w packages/web run test",
+    "test:api:coverage": "npm -w packages/api run coverage",
+    "test:web:coverage": "npm -w packages/web run coverage",
+    "test:coverage": "npm run test:api:coverage && npm run test:web:coverage",
+    "test:unit": "npm -w packages/api run test -- --reporter=verbose",
+    "test:integration": "npm -w packages/api run test -- src/**/*.integration.test.ts --reporter=verbose",
+    "test:e2e": "npm -w packages/web run e2e",
+    "test:e2e:member": "npm -w packages/web run e2e -- members.spec.ts",
+    "test:watch": "npm -w packages/api run test -- --watch",
+    "test:watch:web": "npm -w packages/web run test -- --watch",
     "e2e:fullstack": "playwright test --config playwright.fullstack.config.ts",
     "e2e:fullstack:ui": "npm run e2e:fullstack -- --ui",
     "e2e:fullstack:headed": "npm run e2e:fullstack -- --headed",
@@ -50,6 +61,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
     "pg": "^8.20.0",
+    "prettier": "^3.8.3",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
