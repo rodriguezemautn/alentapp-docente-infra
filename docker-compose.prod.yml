@@ -1,0 +1,120 @@
+# ============================================
+# Alentapp Docente — Producción
+# ============================================
+# Uso: docker compose -f docker-compose.prod.yml up -d
+# Variables: cp .env.example .env && docker compose --env-file .env up -d
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: alentapp-db
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-alentapp_db}
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-alentapp_db}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - alentapp-net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  api:
+    build:
+      context: .
+      dockerfile: packages/api/Dockerfile.prod
+    container_name: alentapp-api
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - alentapp-net
+    # Seguridad: no-new-privileges
+    security_opt:
+      - no-new-privileges:true
+    # Read-only filesystem (except /tmp)
+    read_only: true
+    tmpfs:
+      - /tmp
+    # Capacidades mínimas
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile.prod
+    container_name: alentapp-web
+    ports:
+      - '80:80'
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - alentapp-net
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.3'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+volumes:
+  pgdata:
+
+networks:
+  alentapp-net:
+    driver: bridge
+    name: alentapp-production

@@ -1,4 +1,46 @@
-node_modules
-dist
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+
+# Docs
+docs/actividades-trabajo-practico/
+docs/notas-academicas/
+
+# Docker
+docker-images/
+
+# Git
 .git
+.gitignore
+
+# Logs
 *.log
+
+# Temp
+tmp/
+temp/
