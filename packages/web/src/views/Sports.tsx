@@ -15,7 +15,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { LuPlus, LuPencil, LuTrash2, LuRefreshCw } from "react-icons/lu";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { sportsService } from "../services/sports";
 import type { SportDetailDTO, CreateSportRequest, UpdateSportRequest } from "@alentapp/shared";
 import {
@@ -29,16 +29,13 @@ import {
   DialogCloseTrigger,
 } from "../components/ui/dialog";
 import { Field } from "../components/ui/field";
+import { toaster } from "../components/ui/toaster";
+import { useApi } from "../hooks/useApi";
+import { useDialog } from "../hooks/useDialog";
 
 export function SportsView() {
-  const [sports, setSports] = useState<SportDetailDTO[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // State for the modal
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingSportId, setEditingSportId] = useState<string | null>(null);
+  const { data: sports, isLoading, error, refresh, setData } = useApi(() => sportsService.getAll());
+  const dialog = useDialog<SportDetailDTO>();
 
   // Form state
   const [formData, setFormData] = useState<CreateSportRequest>({
@@ -53,42 +50,26 @@ export function SportsView() {
     maxCapacity?: string;
   }>({});
 
-  const fetchSports = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await sportsService.getAll();
-      setSports(data);
-    } catch (err: any) {
-      setError(err.message || "Error al cargar los deportes");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const openCreateModal = () => {
-    setEditingSportId(null);
+    dialog.openCreate();
     setFormData({ name: "", description: "", maxCapacity: 1 });
     setFormErrors({});
-    setIsDialogOpen(true);
   };
 
   const openEditModal = (sport: SportDetailDTO) => {
-    setEditingSportId(sport.id);
+    dialog.openEdit(sport);
     setFormData({
       name: sport.name,
       description: sport.description || "",
       maxCapacity: sport.maxCapacity,
     });
     setFormErrors({});
-    setIsDialogOpen(true);
   };
 
   const validateForm = (): boolean => {
     const errors: { name?: string; maxCapacity?: string } = {};
 
-    if (!editingSportId) {
-      // Name validation only on create (editing has name disabled)
+    if (!dialog.editingItem) {
       if (!formData.name || formData.name.trim().length === 0) {
         errors.name = "El nombre es requerido";
       } else if (formData.name.length > 100) {
@@ -108,47 +89,57 @@ export function SportsView() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setIsSubmitting(true);
+    dialog.setSubmitting(true);
     try {
-      if (editingSportId) {
+      if (dialog.editingItem) {
         const updateData: UpdateSportRequest = {
           description: formData.description || undefined,
           maxCapacity: formData.maxCapacity,
         };
-        await sportsService.update(editingSportId, updateData);
+        const updated = await sportsService.update(dialog.editingItem.id, updateData);
+        // Optimistic update
+        setData((sports || []).map((s) => (s.id === updated.id ? updated : s)));
+        toaster.create({ title: "Deporte actualizado", type: "success" });
       } else {
-        await sportsService.create(formData as CreateSportRequest);
+        const created = await sportsService.create(formData as CreateSportRequest);
+        // Optimistic update
+        setData([...(sports || []), created]);
+        toaster.create({ title: "Deporte creado", type: "success" });
       }
-      setIsDialogOpen(false);
-      fetchSports(); // Refresh the list
+      dialog.close();
     } catch (err: any) {
-      alert(err.message || "Error al guardar el deporte");
+      toaster.create({
+        title: err.message || "Error al guardar el deporte",
+        type: "error",
+      });
     } finally {
-      setIsSubmitting(false);
+      dialog.setSubmitting(false);
     }
   };
 
   const handleDeleteSport = async (id: string, name: string) => {
-    if (
-      window.confirm(
-        `¿Estás seguro de que deseas eliminar el deporte "${name}"? Esta acción no se puede deshacer.`
-      )
-    ) {
-      try {
-        await sportsService.delete(id);
-        fetchSports(); // Refresh the list
-      } catch (err: any) {
-        alert(err.message || "Error al eliminar el deporte");
-      }
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas eliminar el deporte "${name}"? Esta acción no se puede deshacer.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await sportsService.delete(id);
+      // Optimistic update
+      setData((sports || []).filter((s) => s.id !== id));
+      toaster.create({ title: "Deporte eliminado", type: "success" });
+    } catch (err: any) {
+      toaster.create({
+        title: err.message || "Error al eliminar el deporte",
+        type: "error",
+      });
     }
   };
 
-  useEffect(() => {
-    fetchSports();
-  }, []);
+  const editingId = dialog.editingItem?.id || null;
 
   return (
-    <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
+    <DialogRoot open={dialog.isOpen} onOpenChange={(e) => !e.open && dialog.close()}>
       <Stack gap="8">
         <Flex justify="space-between" align="center">
           <Stack gap="1">
@@ -160,7 +151,7 @@ export function SportsView() {
             </Text>
           </Stack>
           <HStack gap="3">
-            <Button variant="outline" onClick={fetchSports} disabled={isLoading}>
+            <Button variant="outline" onClick={refresh} disabled={isLoading}>
               <LuRefreshCw /> Actualizar
             </Button>
             <Button colorPalette="blue" size="md" onClick={openCreateModal}>
@@ -169,29 +160,23 @@ export function SportsView() {
           </HStack>
         </Flex>
 
-        {/* Modal para agregar/editar deporte */}
+        {/* Modal */}
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>
-                {editingSportId ? "Editar Deporte" : "Agregar Nuevo Deporte"}
+                {editingId ? "Editar Deporte" : "Agregar Nuevo Deporte"}
               </DialogTitle>
             </DialogHeader>
             <DialogBody>
               <Stack gap="4">
-                <Field
-                  label="Nombre"
-                  required
-                  errorText={formErrors.name}
-                >
+                <Field label="Nombre" required errorText={formErrors.name}>
                   <Input
                     placeholder="Ej. Fútbol"
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    readOnly={!!editingSportId}
-                    disabled={!!editingSportId}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    readOnly={!!editingId}
+                    disabled={!!editingId}
                     required
                     maxLength={100}
                   />
@@ -208,28 +193,19 @@ export function SportsView() {
                   <Textarea
                     placeholder="Descripción del deporte (opcional)"
                     value={formData.description || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     maxLength={500}
                   />
                 </Field>
 
-                <Field
-                  label="Capacidad Máxima"
-                  required
-                  errorText={formErrors.maxCapacity}
-                >
+                <Field label="Capacidad Máxima" required errorText={formErrors.maxCapacity}>
                   <Input
                     type="number"
                     min={1}
                     placeholder="Ej. 22"
                     value={formData.maxCapacity}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        maxCapacity: parseInt(e.target.value) || 0,
-                      })
+                      setFormData({ ...formData, maxCapacity: parseInt(e.target.value) || 0 })
                     }
                     required
                   />
@@ -240,8 +216,8 @@ export function SportsView() {
               <DialogActionTrigger asChild>
                 <Button variant="outline">Cancelar</Button>
               </DialogActionTrigger>
-              <Button type="submit" colorPalette="blue" loading={isSubmitting}>
-                {editingSportId ? "Guardar Cambios" : "Crear Deporte"}
+              <Button type="submit" colorPalette="blue" loading={dialog.isSubmitting}>
+                {editingId ? "Guardar Cambios" : "Crear Deporte"}
               </Button>
             </DialogFooter>
             <DialogCloseTrigger />
@@ -249,14 +225,7 @@ export function SportsView() {
         </DialogContent>
 
         {error && (
-          <Box
-            p="4"
-            bg="red.50"
-            color="red.700"
-            borderRadius="md"
-            border="1px solid"
-            borderColor="red.200"
-          >
+          <Box p="4" bg="red.50" color="red.700" borderRadius="md" border="1px solid" borderColor="red.200">
             <Text fontWeight="bold">Error:</Text>
             <Text>{error}</Text>
           </Box>
@@ -278,11 +247,11 @@ export function SportsView() {
                 <Text color="fg.muted">Cargando deportes...</Text>
               </Stack>
             </Center>
-          ) : sports.length === 0 ? (
+          ) : !sports || sports.length === 0 ? (
             <Center h="300px">
               <Stack align="center" gap="4">
                 <Text color="fg.muted">No se encontraron deportes.</Text>
-                <Button variant="ghost" onClick={fetchSports}>
+                <Button variant="ghost" onClick={refresh}>
                   Reintentar
                 </Button>
               </Stack>
@@ -295,9 +264,7 @@ export function SportsView() {
                   <Table.ColumnHeader py="4">Descripción</Table.ColumnHeader>
                   <Table.ColumnHeader py="4">Capacidad Máx.</Table.ColumnHeader>
                   <Table.ColumnHeader py="4">Disciplinas</Table.ColumnHeader>
-                  <Table.ColumnHeader py="4" textAlign="end">
-                    Acciones
-                  </Table.ColumnHeader>
+                  <Table.ColumnHeader py="4" textAlign="end">Acciones</Table.ColumnHeader>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -306,15 +273,10 @@ export function SportsView() {
                     <Table.Cell fontWeight="semibold" color="fg.emphasized">
                       {sport.name}
                     </Table.Cell>
-                    <Table.Cell color="fg.muted">
-                      {sport.description || "-"}
-                    </Table.Cell>
+                    <Table.Cell color="fg.muted">{sport.description || "-"}</Table.Cell>
                     <Table.Cell color="fg.muted">{sport.maxCapacity}</Table.Cell>
                     <Table.Cell>
-                      <Badge
-                        colorPalette={sport.disciplineCount > 0 ? "blue" : "gray"}
-                        size="sm"
-                      >
+                      <Badge colorPalette={sport.disciplineCount > 0 ? "blue" : "gray"} size="sm">
                         {sport.disciplineCount}
                       </Badge>
                     </Table.Cell>
@@ -339,9 +301,7 @@ export function SportsView() {
                               ? "No se puede eliminar: tiene disciplinas asociadas"
                               : ""
                           }
-                          onClick={() =>
-                            handleDeleteSport(sport.id, sport.name)
-                          }
+                          onClick={() => handleDeleteSport(sport.id, sport.name)}
                         >
                           <LuTrash2 />
                         </IconButton>
