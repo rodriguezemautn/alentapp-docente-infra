@@ -57,6 +57,30 @@ function Layout() {
                                 Pagos
                             </Text>
                         </RouterLink>
+                        <RouterLink to="/certificados-medicos">
+                            <Text 
+                                fontWeight="semibold" 
+                                fontSize="sm" 
+                                textTransform="uppercase" 
+                                letterSpacing="wider"
+                                color="fg.muted"
+                                _hover={{ color: "blue.500", textDecoration: "none" }}
+                            >
+                                Certificados
+                            </Text>
+                        </RouterLink>
+                        <RouterLink to="/disciplinas">
+                            <Text 
+                                fontWeight="semibold" 
+                                fontSize="sm" 
+                                textTransform="uppercase" 
+                                letterSpacing="wider"
+                                color="fg.muted"
+                                _hover={{ color: "blue.500", textDecoration: "none" }}
+                            >
+                                Disciplinas
+                            </Text>
+                        </RouterLink>
                     </HStack>
                 </Flex>
             </Box>
