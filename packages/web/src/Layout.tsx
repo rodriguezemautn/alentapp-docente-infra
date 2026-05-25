@@ -105,7 +105,6 @@ function Layout() {
                     <Outlet />
                 </Container>
                 <Toaster />
-            </Box>
         </Provider>
     );
 }
