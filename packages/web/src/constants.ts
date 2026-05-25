@@ -1,4 +1,4 @@
-import { createListCollection } from "../components/ui/select";
+import { createListCollection } from "./components/ui/select";
 
 // ==========================================
 // Member
