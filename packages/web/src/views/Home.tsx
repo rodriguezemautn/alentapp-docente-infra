@@ -1,14 +1,20 @@
 import { Box, SimpleGrid, Heading, Text, VStack } from "@chakra-ui/react";
-import { LuUsers } from "react-icons/lu";
+import {
+  LuUsers,
+  LuTrophy,
+  LuCreditCard,
+  LuFileText,
+  LuListTree,
+} from "react-icons/lu";
 import { SectionCard } from "../components/SectionCard";
 
 export function HomeView() {
   return (
     <Box>
       <VStack gap="6" align="flex-start" mb="12">
-        <Heading 
-          size="4xl" 
-          fontWeight="extrabold" 
+        <Heading
+          size="4xl"
+          fontWeight="extrabold"
           letterSpacing="tight"
           bgGradient="to-r"
           gradientFrom="blue.600"
@@ -18,36 +24,46 @@ export function HomeView() {
           Bienvenido a Alentapp
         </Heading>
         <Text fontSize="xl" color="fg.muted" maxW="2xl">
-          El panel de administración central para gestionar todos los aspectos de tu club. 
-          Selecciona una sección a continuación para comenzar.
+          El panel de administración central para gestionar todos los aspectos de
+          tu club. Seleccioná una sección a continuación para comenzar.
         </Text>
       </VStack>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap="8">
-        <SectionCard 
+        <SectionCard
           title="Miembros"
-          description="Administra el padrón de socios, sus categorías, estados de cuenta y datos personales."
+          description="Administrá el padrón de socios, sus categorías, estados de cuenta y datos personales."
           to="/members"
           icon={LuUsers}
         />
 
-        {/* Future sections can be added here following the same pattern */}
-        <Box 
-          p="6" 
-          bg="bg.muted/30" 
-          borderRadius="2xl" 
-          borderWidth="1px" 
-          borderColor="border.subtle"
-          borderStyle="dashed"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          minH="250px"
-        >
-          <VStack>
-            <Text color="fg.muted" fontWeight="medium">Próximamente nuevas secciones</Text>
-          </VStack>
-        </Box>
+        <SectionCard
+          title="Deportes"
+          description="Gestioná los deportes ofrecidos por el club, sus capacidades y disciplinas asociadas."
+          to="/sports"
+          icon={LuTrophy}
+        />
+
+        <SectionCard
+          title="Pagos"
+          description="Registrá y consultá pagos de socios, con filtros por rango de fechas y estado."
+          to="/pagos"
+          icon={LuCreditCard}
+        />
+
+        <SectionCard
+          title="Certificados Médicos"
+          description="Administrá los certificados médicos de los socios y consultá su estado activo."
+          to="/certificados-medicos"
+          icon={LuFileText}
+        />
+
+        <SectionCard
+          title="Disciplinas"
+          description="Administrá las divisiones y variantes de cada deporte con sus horarios y profesores."
+          to="/disciplinas"
+          icon={LuListTree}
+        />
       </SimpleGrid>
     </Box>
   );

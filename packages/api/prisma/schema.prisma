@@ -51,9 +51,16 @@ model Sport {
 }
 
 model Discipline {
-    id      String @id @default(uuid())
-    sportId String
-    sport   Sport  @relation(fields: [sportId], references: [id])
+    id          String    @id @default(uuid())
+    sportId     String
+    sport       Sport     @relation(fields: [sportId], references: [id])
+    name        String
+    description String?
+    startDate   DateTime  @db.Date
+    endDate     DateTime  @db.Date
+    schedule    String?
+    professor   String?
+    created_at  DateTime  @default(now())
 
     @@map("disciplines")
 }

@@ -21,16 +21,14 @@ describe('HomeView', () => {
         expect(screen.getByText('Bienvenido a Alentapp')).toBeInTheDocument();
     });
 
-    it('debe contener la tarjeta de la sección "Miembros"', () => {
+    it('debe contener todas las tarjetas de secciones', () => {
         renderWithProviders(<HomeView />);
         
-        // Verifica que la SectionCard de "Miembros" esté presente
+        // Cards de navegación
         expect(screen.getByText('Miembros')).toBeInTheDocument();
-        expect(screen.getByText(/Administra el padrón de socios/i)).toBeInTheDocument();
-    });
-
-    it('debe mostrar el placeholder de "Próximamente"', () => {
-        renderWithProviders(<HomeView />);
-        expect(screen.getByText('Próximamente nuevas secciones')).toBeInTheDocument();
+        expect(screen.getByText('Deportes')).toBeInTheDocument();
+        expect(screen.getByText('Pagos')).toBeInTheDocument();
+        expect(screen.getByText('Certificados Médicos')).toBeInTheDocument();
+        expect(screen.getByText('Disciplinas')).toBeInTheDocument();
     });
 });
