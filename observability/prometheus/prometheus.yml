@@ -1,0 +1,21 @@
+# Prometheus — Configuración
+# Este archivo le dice a Prometheus qué servicios monitorear y cada cuánto.
+
+global:
+  scrape_interval: 15s      # Cada 15s consulta métricas
+  evaluation_interval: 15s  # Cada 15s evalúa reglas de alerta
+
+scrape_configs:
+  # Métricas de la API de Alentapp
+  - job_name: 'alentapp-api'
+    static_configs:
+      - targets: ['host.docker.internal:3000']  # La API corre en el host
+        labels:
+          app: 'alentapp'
+          service: 'api'
+          environment: 'development'
+
+  # Métricas de Prometheus mismo (para verificar que funciona)
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

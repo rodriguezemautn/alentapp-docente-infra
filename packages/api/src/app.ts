@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import metrics from 'fastify-metrics';
 import { PostgresMemberRepository } from './infrastructure/PostgresMemberRepository.js';
 import { MemberValidator } from './domain/services/MemberValidator.js';
 import { CreateMemberUseCase } from './application/NewMemberUseCase.js';
@@ -155,6 +156,9 @@ export function buildApp() {
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
     });
+
+    // Métricas Prometheus (solo en producción o cuando se solicita)
+    server.register(metrics, { endpoint: '/metrics' });
 
     return server;
 }
