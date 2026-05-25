@@ -56,6 +56,9 @@ export function buildApp() {
         credentials: true,
     });
 
+    // Métricas Prometheus (debe registrarse antes de las rutas)
+    server.register(metrics, { endpoint: '/metrics' });
+
     const memberRepo = new PostgresMemberRepository();
     const memberValidator = new MemberValidator(memberRepo);
     
@@ -156,9 +159,6 @@ export function buildApp() {
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
     });
-
-    // Métricas Prometheus (solo en producción o cuando se solicita)
-    server.register(metrics, { endpoint: '/metrics' });
 
     return server;
 }
