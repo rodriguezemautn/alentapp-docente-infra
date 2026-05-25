@@ -40,6 +40,7 @@ import {
   SelectItem,
   createListCollection,
 } from "../components/ui/select";
+import { toaster } from "../components/ui/toaster";
 
 export function MedicalCertificatesView() {
   const [members, setMembers] = useState<MemberDTO[]>([]);
@@ -80,7 +81,6 @@ export function MedicalCertificatesView() {
       setError(null);
       return;
     }
-
     const fetchActive = async () => {
       setIsLoading(true);
       setError(null);
@@ -120,29 +120,27 @@ export function MedicalCertificatesView() {
 
       await medicalCertificatesService.create(payload);
       setIsDialogOpen(false);
-      // Refetch certificate
+
+      // Refetch certificate (transaction: old one was deactivated)
       const result = await medicalCertificatesService.getActive(selectedMemberId);
       setCertificate(result);
+      toaster.create({ title: "Certificado creado", type: "success" });
     } catch (err: any) {
-      alert(err.message || "Error al crear el certificado");
+      toaster.create({ title: err.message || "Error al crear el certificado", type: "error" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("es-AR");
-  };
+  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString("es-AR");
 
   return (
-    <DialogRoot open={isDialogOpen} onOpenChange={(e) => setIsDialogOpen(e.open)}>
+    <DialogRoot open={isDialogOpen} onOpenChange={(e) => !e.open && setIsDialogOpen(false)}>
       <Stack gap="8">
         {/* Header */}
         <Flex justify="space-between" align="center">
           <Stack gap="1">
-            <Heading size="2xl" fontWeight="bold">
-              Certificados Médicos
-            </Heading>
+            <Heading size="2xl" fontWeight="bold">Certificados Médicos</Heading>
             <Text color="fg.muted" fontSize="md">
               Gestioná los certificados médicos de los socios.
             </Text>
@@ -162,9 +160,7 @@ export function MedicalCertificatesView() {
               </SelectTrigger>
               <SelectContent>
                 {memberCollection.items.map((item) => (
-                  <SelectItem item={item} key={item.value}>
-                    {item.label}
-                  </SelectItem>
+                  <SelectItem item={item} key={item.value}>{item.label}</SelectItem>
                 ))}
               </SelectContent>
             </SelectRoot>
@@ -175,9 +171,7 @@ export function MedicalCertificatesView() {
         {!selectedMemberId ? (
           <Center py="10">
             <Stack align="center" gap="4">
-              <Text color="fg.muted" fontSize="lg">
-                Seleccioná un socio para ver su certificado médico activo
-              </Text>
+              <Text color="fg.muted" fontSize="lg">Seleccioná un socio para ver su certificado médico activo</Text>
             </Stack>
           </Center>
         ) : isLoading ? (
@@ -188,75 +182,41 @@ export function MedicalCertificatesView() {
             </Stack>
           </Center>
         ) : error ? (
-          <Box
-            p="4"
-            bg="red.50"
-            color="red.700"
-            borderRadius="md"
-            border="1px solid"
-            borderColor="red.200"
-          >
+          <Box p="4" bg="red.50" color="red.700" borderRadius="md" border="1px solid" borderColor="red.200">
             <Text fontWeight="bold">Error:</Text>
             <Text>{error}</Text>
           </Box>
         ) : certificate ? (
-          <Box
-            p="6"
-            bg="bg.panel"
-            borderRadius="xl"
-            boxShadow="sm"
-            borderWidth="1px"
-          >
+          <Box p="6" bg="bg.panel" borderRadius="xl" boxShadow="sm" borderWidth="1px">
             <Flex justify="space-between" align="flex-start" mb="4">
               <Stack gap="1">
-                <Heading size="lg" fontWeight="bold">
-                  Certificado Activo
-                </Heading>
-                <Text color="fg.muted" fontSize="sm">
-                  Emitido el {formatDate(certificate.issueDate)}
-                </Text>
+                <Heading size="lg" fontWeight="bold">Certificado Activo</Heading>
+                <Text color="fg.muted" fontSize="sm">Emitido el {formatDate(certificate.issueDate)}</Text>
               </Stack>
               <Button colorPalette="blue" size="sm" onClick={openCreateModal}>
                 <LuPlus /> Nuevo Certificado
               </Button>
             </Flex>
-
             <Stack gap="3">
               <HStack gap="2">
-                <Text fontWeight="semibold" color="fg.emphasized">
-                  Estado:
-                </Text>
-                <Badge colorPalette="green" size="sm">
-                  Activo
-                </Badge>
+                <Text fontWeight="semibold" color="fg.emphasized">Estado:</Text>
+                <Badge colorPalette="green" size="sm">Activo</Badge>
               </HStack>
-
               {certificate.expirationDate && (
-                <Text color="fg.muted">
-                  <strong>Vence:</strong>{" "}
-                  {formatDate(certificate.expirationDate)}
-                </Text>
+                <Text color="fg.muted"><strong>Vence:</strong> {formatDate(certificate.expirationDate)}</Text>
               )}
-
               {certificate.doctorName && (
-                <Text color="fg.muted">
-                  <strong>Médico:</strong> {certificate.doctorName}
-                </Text>
+                <Text color="fg.muted"><strong>Médico:</strong> {certificate.doctorName}</Text>
               )}
-
               {certificate.description && (
-                <Text color="fg.muted">
-                  <strong>Descripción:</strong> {certificate.description}
-                </Text>
+                <Text color="fg.muted"><strong>Descripción:</strong> {certificate.description}</Text>
               )}
             </Stack>
           </Box>
         ) : (
           <Center py="10">
             <Stack align="center" gap="4">
-              <Text color="fg.muted" fontSize="lg">
-                No hay certificado activo
-              </Text>
+              <Text color="fg.muted" fontSize="lg">No hay certificado activo</Text>
               <Button colorPalette="blue" onClick={openCreateModal}>
                 <LuPlus /> Nuevo Certificado
               </Button>
@@ -276,61 +236,26 @@ export function MedicalCertificatesView() {
                   <SelectRoot
                     collection={memberCollection}
                     value={[formData.memberId]}
-                    onValueChange={(e) =>
-                      setFormData({ ...formData, memberId: e.value[0] || "" })
-                    }
+                    onValueChange={(e) => setFormData({ ...formData, memberId: e.value[0] || "" })}
                   >
                     <SelectTrigger>
                       <SelectValueText placeholder="Seleccioná un socio" />
                     </SelectTrigger>
                     <SelectContent>
                       {memberCollection.items.map((item) => (
-                        <SelectItem item={item} key={item.value}>
-                          {item.label}
-                        </SelectItem>
+                        <SelectItem item={item} key={item.value}>{item.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </SelectRoot>
                 </Field>
-
                 <Field label="Fecha de vencimiento (opcional)">
-                  <Input
-                    type="date"
-                    value={formData.expirationDate || ""}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        expirationDate: e.target.value,
-                      })
-                    }
-                  />
+                  <Input type="date" value={formData.expirationDate || ""} onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })} />
                 </Field>
-
                 <Field label="Descripción (opcional)">
-                  <Textarea
-                    value={formData.description || ""}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        description: e.target.value,
-                      })
-                    }
-                    placeholder="Ej. Aptitud física para deportes de contacto"
-                  />
+                  <Textarea value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Ej. Aptitud física para deportes de contacto" />
                 </Field>
-
                 <Field label="Médico (opcional)">
-                  <Input
-                    type="text"
-                    value={formData.doctorName || ""}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        doctorName: e.target.value,
-                      })
-                    }
-                    placeholder="Nombre del médico"
-                  />
+                  <Input type="text" value={formData.doctorName || ""} onChange={(e) => setFormData({ ...formData, doctorName: e.target.value })} placeholder="Nombre del médico" />
                 </Field>
               </Stack>
             </DialogBody>
@@ -338,13 +263,7 @@ export function MedicalCertificatesView() {
               <DialogActionTrigger asChild>
                 <Button variant="outline">Cancelar</Button>
               </DialogActionTrigger>
-              <Button
-                type="submit"
-                colorPalette="blue"
-                loading={isSubmitting}
-              >
-                Crear Certificado
-              </Button>
+              <Button type="submit" colorPalette="blue" loading={isSubmitting}>Crear Certificado</Button>
             </DialogFooter>
             <DialogCloseTrigger />
           </form>
