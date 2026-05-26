@@ -161,3 +161,50 @@ export interface CreateMedicalCertificateRequest {
   description?: string;
   doctorName?: string;
 }
+
+// ==========================================
+// Locker
+// ==========================================
+export type LockerStatus = 'Available' | 'Occupied' | 'Maintenance';
+
+export interface LockerDTO {
+  id: string;
+  number: number;
+  location?: string;
+  status: LockerStatus;
+  memberId?: string;
+  created_at: string;
+}
+
+export interface LockerDetailDTO extends LockerDTO {
+  memberName?: string;
+}
+
+export interface CreateLockerRequest {
+  number: number;
+  location?: string;
+}
+
+export interface UpdateLockerRequest {
+  number?: number;
+  location?: string;
+  status?: LockerStatus;
+  memberId?: string | null;
+}
+
+// ==========================================
+// Locker Assignment Log
+// ==========================================
+export type LockerEventType = 'Assignment' | 'Release';
+
+export interface LockerAssignmentLogDTO {
+  id: string;
+  lockerId: string;
+  lockerNumber: number;
+  memberId: string;
+  memberName: string;
+  eventType: LockerEventType;
+  assignedAt: string;
+  releasedAt?: string;
+  created_at: string;
+}
