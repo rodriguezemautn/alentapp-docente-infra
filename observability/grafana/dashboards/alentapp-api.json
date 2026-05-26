@@ -1,0 +1,67 @@
+{
+  "title": "Alentapp API — Dashboard",
+  "uid": "alentapp-api-dashboard",
+  "description": "Dashboard de monitoreo para la API de Alentapp Docente",
+  "tags": ["alentapp", "api", "fastify"],
+  "timezone": "America/Argentina/Buenos_Aires",
+  "panels": [
+    {
+      "title": "Requests por segundo",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(http_requests_total[1m])",
+          "legendFormat": "{{method}} {{route}}"
+        }
+      ],
+      "description": "Cantidad de requests HTTP por segundo, agrupados por método y ruta"
+    },
+    {
+      "title": "Duración de requests (p99)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99 {{method}} {{route}}"
+        }
+      ],
+      "description": "Percentil 99 de duración de requests — si sube, hay lentitud"
+    },
+    {
+      "title": "HTTP Status Codes",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{status=~\"2..\"}[5m])",
+          "legendFormat": "2xx"
+        },
+        {
+          "expr": "rate(http_requests_total{status=~\"4..\"}[5m])",
+          "legendFormat": "4xx"
+        },
+        {
+          "expr": "rate(http_requests_total{status=~\"5..\"}[5m])",
+          "legendFormat": "5xx"
+        }
+      ],
+      "description": "Distribución de códigos HTTP: 2xx = éxito, 4xx = error de cliente, 5xx = error de servidor"
+    },
+    {
+      "title": "Memoria del proceso",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes / 1024 / 1024",
+          "legendFormat": "Memoria RSS (MB)"
+        }
+      ],
+      "description": "Memoria RAM utilizada por el proceso Node.js en MB"
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}
