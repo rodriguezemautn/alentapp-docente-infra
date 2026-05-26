@@ -24,6 +24,12 @@ enum MemberStatus {
     Suspendido
 }
 
+enum SportCategory {
+    Senior
+    Lifetime
+    Cadet
+}
+
 model Member {
     id         String         @id @default(uuid())
     dni        String         @unique
@@ -32,6 +38,7 @@ model Member {
     birthdate  DateTime?      @db.Date
     category   MemberCategory
     status     MemberStatus   @default(Activo)
+    sportCategory SportCategory?
     created_at DateTime       @default(now())
     payments            Payment[]
     medicalCertificates  MedicalCertificate[]
@@ -143,4 +150,24 @@ model LockerAssignmentLog {
     created_at DateTime         @default(now())
 
     @@map("locker_assignment_logs")
+}
+
+enum LoanStatus {
+    Active
+    Returned
+    Lost
+}
+
+model EquipmentLoan {
+    id            String     @id @default(uuid())
+    memberId      String
+    member        Member     @relation(fields: [memberId], references: [id])
+    equipmentName String
+    loanDate      DateTime   @default(now())
+    returnDate    DateTime?
+    status        LoanStatus @default(Active)
+    notes         String?
+    created_at    DateTime   @default(now())
+
+    @@map("equipment_loans")
 }

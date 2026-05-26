@@ -3,6 +3,7 @@
 // ==========================================
 export type MemberCategory = 'Pleno' | 'Cadete' | 'Honorario';
 export type MemberStatus = 'Activo' | 'Moroso' | 'Suspendido';
+export type SportCategory = 'Senior' | 'Lifetime' | 'Cadet';
 
 export interface MemberDTO {
   id: string; // UUID
@@ -12,7 +13,18 @@ export interface MemberDTO {
   birthdate: string; // ISO Date String (YYYY-MM-DD)
   category: MemberCategory;
   status: MemberStatus;
+  sportCategory?: SportCategory;
   created_at: string; // ISO Date String
+}
+
+export interface UpdateMemberRequest {
+  dni?: string;
+  name?: string;
+  email?: string;
+  birthdate?: string; // ISO Date String (YYYY-MM-DD)
+  category?: MemberCategory;
+  status?: MemberStatus;
+  sportCategory?: SportCategory;
 }
 
 export interface CreateMemberRequest {
@@ -207,4 +219,35 @@ export interface LockerAssignmentLogDTO {
   assignedAt: string;
   releasedAt?: string;
   created_at: string;
+}
+
+// ==========================================
+// Equipment Loan
+// ==========================================
+export type LoanStatus = 'Active' | 'Returned' | 'Lost';
+
+export interface EquipmentLoanDTO {
+  id: string;
+  memberId: string;
+  equipmentName: string;
+  loanDate: string;
+  returnDate?: string;
+  status: LoanStatus;
+  notes?: string;
+  created_at: string;
+}
+
+export interface EquipmentLoanDetailDTO extends EquipmentLoanDTO {
+  memberName?: string;
+}
+
+export interface CreateEquipmentLoanRequest {
+  memberId: string;
+  equipmentName: string;
+  notes?: string;
+}
+
+export interface ReturnEquipmentLoanRequest {
+  returnDate?: string;
+  notes?: string;
 }
