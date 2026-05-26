@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
 import { LockerRepository, LockerAssignmentLogRepository } from '../domain/LockerRepository.js';
-import { LockerDTO, LockerDetailDTO, CreateLockerRequest, UpdateLockerRequest, LockerAssignmentLogDTO } from '@alentapp/shared';
+import { LockerDTO, LockerDetailDTO, CreateLockerRequest, UpdateLockerRequest, LockerAssignmentLogDTO, LockerReportResponse } from '@alentapp/shared';
 
 if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is not set');
@@ -75,6 +75,17 @@ export class PostgresLockerRepository implements LockerRepository {
 
     async delete(id: string): Promise<void> {
         await prisma.locker.delete({ where: { id } });
+    }
+
+    async getLockerReport(): Promise<LockerReportResponse> {
+        const lockers = await prisma.locker.findMany();
+        const total = lockers.length;
+        const available = lockers.filter((l) => l.status === 'Available').length;
+        const occupied = lockers.filter((l) => l.status === 'Occupied').length;
+        const maintenance = lockers.filter((l) => l.status === 'Maintenance').length;
+        const occupancyRate = total > 0 ? Math.round((occupied / total) * 100) : 0;
+
+        return { total, available, occupied, maintenance, occupancyRate };
     }
 
     private mapToDTO(locker: DBLocker): LockerDTO {

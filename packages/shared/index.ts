@@ -251,3 +251,63 @@ export interface ReturnEquipmentLoanRequest {
   returnDate?: string;
   notes?: string;
 }
+
+// ==========================================
+// Reports
+// ==========================================
+export interface IncomeReportItem {
+  period: string;
+  total: number;
+  byType: {
+    Cuota: number;
+    Mensualidad: number;
+    Inscripcion: number;
+    Otro: number;
+  };
+  canceledCount: number;
+}
+
+export interface IncomeReportResponse {
+  from: string;
+  to: string;
+  grandTotal: number;
+  items: IncomeReportItem[];
+}
+
+export interface LockerReportResponse {
+  total: number;
+  available: number;
+  occupied: number;
+  maintenance: number;
+  occupancyRate: number;
+}
+
+export interface MaterialReportResponse {
+  totalLoans: number;
+  byStatus: {
+    active: number;
+    returned: number;
+    lost: number;
+  };
+  activeLoans: EquipmentLoanDetailDTO[];
+  lostItems: EquipmentLoanDetailDTO[];
+}
+
+export interface MemberReportResponse {
+  total: number;
+  byCategory: {
+    Pleno: number;
+    Cadete: number;
+    Honorario: number;
+  };
+  byStatus: {
+    Activo: number;
+    Moroso: number;
+    Suspendido: number;
+  };
+  delinquencyRate: number;
+  monthlyRegistrations: {
+    month: string;
+    count: number;
+  }[];
+}

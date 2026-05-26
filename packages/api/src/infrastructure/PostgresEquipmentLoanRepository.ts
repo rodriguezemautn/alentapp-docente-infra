@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
 import { EquipmentLoanRepository } from '../domain/EquipmentLoanRepository.js';
-import { EquipmentLoanDTO, EquipmentLoanDetailDTO, CreateEquipmentLoanRequest, ReturnEquipmentLoanRequest } from '@alentapp/shared';
+import { EquipmentLoanDTO, EquipmentLoanDetailDTO, CreateEquipmentLoanRequest, ReturnEquipmentLoanRequest, MaterialReportResponse } from '@alentapp/shared';
 
 if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is not set');
@@ -77,6 +77,37 @@ export class PostgresEquipmentLoanRepository implements EquipmentLoanRepository 
 
     async delete(id: string): Promise<void> {
         await prisma.equipmentLoan.delete({ where: { id } });
+    }
+
+    async getMaterialReport(): Promise<MaterialReportResponse> {
+        const loans = await prisma.equipmentLoan.findMany({
+            include: { member: { select: { name: true } } },
+            orderBy: { created_at: 'desc' },
+        });
+
+        const totalLoans = loans.length;
+        const active = loans.filter((l) => l.status === 'Active').length;
+        const returned = loans.filter((l) => l.status === 'Returned').length;
+        const lost = loans.filter((l) => l.status === 'Lost').length;
+
+        const mapDetail = (loan: typeof loans[0]): EquipmentLoanDetailDTO => ({
+            id: loan.id,
+            memberId: loan.memberId,
+            equipmentName: loan.equipmentName,
+            loanDate: loan.loanDate.toISOString(),
+            returnDate: loan.returnDate?.toISOString() || undefined,
+            status: loan.status as EquipmentLoanDetailDTO['status'],
+            notes: loan.notes || undefined,
+            memberName: loan.member.name,
+            created_at: loan.created_at.toISOString(),
+        });
+
+        return {
+            totalLoans,
+            byStatus: { active, returned, lost },
+            activeLoans: loans.filter((l) => l.status === 'Active').map(mapDetail),
+            lostItems: loans.filter((l) => l.status === 'Lost').map(mapDetail),
+        };
     }
 
     private mapToDTO(loan: DBEquipmentLoan): EquipmentLoanDTO {

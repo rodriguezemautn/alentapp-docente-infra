@@ -1,7 +1,7 @@
 import { Box, SimpleGrid, Heading, Text, VStack } from "@chakra-ui/react";
 import {
-  LuDoorOpen,
   LuPackage,
+  LuBarChart3,
 } from "react-icons/lu";
 import { SectionCard } from "../components/SectionCard";
 
@@ -74,6 +74,13 @@ export function HomeView() {
           description="Registrá y gestioná el material deportivo prestado a socios."
           to="/prestamos-equipamiento"
           icon={LuPackage}
+        />
+
+        <SectionCard
+          title="Reportes"
+          description="Visualizá indicadores clave y estadísticas del club."
+          to="/reportes"
+          icon={LuBarChart3}
         />
       </SimpleGrid>
     </Box>

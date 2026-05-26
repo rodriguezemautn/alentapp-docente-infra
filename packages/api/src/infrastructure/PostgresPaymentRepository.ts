@@ -8,6 +8,8 @@ import {
     PaymentFilters,
     PaymentStatus,
     PaginatedResponse,
+    IncomeReportResponse,
+    IncomeReportItem,
 } from '@alentapp/shared';
 
 if (!process.env.DATABASE_URL) {
@@ -109,6 +111,73 @@ export class PostgresPaymentRepository implements PaymentRepository {
             },
         });
         return this.mapToDTO(payment);
+    }
+
+    async getIncomeReport(from: string, to: string, groupBy: string): Promise<IncomeReportResponse> {
+        const payments = await prisma.payment.findMany({
+            where: {
+                status: 'Completed',
+                paymentDate: {
+                    gte: new Date(from),
+                    lte: new Date(to),
+                },
+            },
+            orderBy: { paymentDate: 'asc' },
+        });
+
+        const grouped = new Map<string, IncomeReportItem>();
+        let grandTotal = 0;
+
+        for (const p of payments) {
+            let period: string;
+            const d = p.paymentDate;
+            if (groupBy === 'year') {
+                period = `${d.getFullYear()}`;
+            } else if (groupBy === 'month') {
+                period = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            } else {
+                period = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+
+            if (!grouped.has(period)) {
+                grouped.set(period, {
+                    period,
+                    total: 0,
+                    byType: { Cuota: 0, Mensualidad: 0, Inscripcion: 0, Otro: 0 },
+                    canceledCount: 0,
+                });
+            }
+
+            const item = grouped.get(period)!;
+            const amount = Number(p.amount);
+            item.total += amount;
+            grandTotal += amount;
+
+            const type = p.paymentType as keyof IncomeReportItem['byType'];
+            if (type in item.byType) {
+                item.byType[type] += amount;
+            } else {
+                item.byType['Otro'] += amount;
+            }
+        }
+
+        // Obtener conteo de cancelados en el período
+        const canceledCount = await prisma.payment.count({
+            where: {
+                status: 'Canceled',
+                paymentDate: {
+                    gte: new Date(from),
+                    lte: new Date(to),
+                },
+            },
+        });
+
+        return {
+            from,
+            to,
+            grandTotal,
+            items: Array.from(grouped.values()),
+        };
     }
 
     private mapToDTO(payment: DBPayment): PaymentDTO {
