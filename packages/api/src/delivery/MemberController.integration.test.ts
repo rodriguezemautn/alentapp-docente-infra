@@ -33,6 +33,88 @@ vi.mock('../infrastructure/PostgresSportRepository.js', () => {
     };
 });
 
+// Mockeamos PostgresPaymentRepository para que app.ts no falle
+vi.mock('../infrastructure/PostgresPaymentRepository.js', () => {
+    const paymentsStore: Record<string, any> = {};
+    let nextId = 1;
+    return {
+        PostgresPaymentRepository: class {
+            async findAll() { return Object.values(paymentsStore); }
+            async findById(id: string) { return paymentsStore[id] || null; }
+            async create(data: any) {
+                const id = String(nextId++);
+                paymentsStore[id] = { id, ...data, created_at: new Date().toISOString() };
+                return paymentsStore[id];
+            }
+            async updateStatus(id: string, status: string) {
+                if (paymentsStore[id]) paymentsStore[id].status = status;
+                return paymentsStore[id] || null;
+            }
+            async getIncomeReport() { return { total: 0, count: 0 }; }
+        }
+    };
+});
+
+// Mockeamos PostgresMedicalCertificateRepository
+vi.mock('../infrastructure/PostgresMedicalCertificateRepository.js', () => {
+    return {
+        PostgresMedicalCertificateRepository: class {
+            async create(data: any) { return { id: 'mc-1', ...data }; }
+            async findActiveByMemberId() { return null; }
+            async deactivateAllForMember() { return; }
+        }
+    };
+});
+
+// Mockeamos PostgresDisciplineRepository
+vi.mock('../infrastructure/PostgresDisciplineRepository.js', () => {
+    return {
+        PostgresDisciplineRepository: class {
+            async findAll() { return []; }
+            async findById() { return null; }
+            async findBySportId() { return []; }
+            async create(data: any) { return { id: 'disc-1', ...data }; }
+            async update() { return null; }
+            async delete() { return; }
+        }
+    };
+});
+
+// Mockeamos PostgresLockerRepository (exporta dos clases)
+vi.mock('../infrastructure/PostgresLockerRepository.js', () => {
+    return {
+        PostgresLockerRepository: class {
+            async findAll() { return []; }
+            async findById() { return null; }
+            async findByNumber() { return null; }
+            async create(data: any) { return { id: 'locker-1', ...data }; }
+            async update() { return null; }
+            async delete() { return; }
+            async getLockerReport() { return { total: 0, assigned: 0, available: 0 }; }
+        },
+        PostgresLockerAssignmentLogRepository: class {
+            async create(data: any) { return { id: 'log-1', ...data }; }
+            async findByLockerId() { return []; }
+            async findByMemberId() { return []; }
+            async findAll() { return []; }
+        }
+    };
+});
+
+// Mockeamos PostgresEquipmentLoanRepository
+vi.mock('../infrastructure/PostgresEquipmentLoanRepository.js', () => {
+    return {
+        PostgresEquipmentLoanRepository: class {
+            async findAll() { return []; }
+            async findById() { return null; }
+            async create(data: any) { return { id: 'loan-1', ...data }; }
+            async updateStatus() { return null; }
+            async delete() { return; }
+            async getMaterialReport() { return { total: 0, active: 0, returned: 0, lost: 0 }; }
+        }
+    };
+});
+
 describe('Member API Integration Tests', () => {
     let app: FastifyInstance;
 

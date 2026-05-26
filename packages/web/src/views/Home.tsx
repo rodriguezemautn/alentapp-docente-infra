@@ -1,7 +1,13 @@
 import { Box, SimpleGrid, Heading, Text, VStack } from "@chakra-ui/react";
 import {
+  LuUsers,
+  LuTrophy,
+  LuCreditCard,
+  LuFileText,
+  LuListTree,
+  LuDoorOpen,
   LuPackage,
-  LuBarChart3,
+  LuChartBar,
 } from "react-icons/lu";
 import { SectionCard } from "../components/SectionCard";
 
@@ -80,7 +86,7 @@ export function HomeView() {
           title="Reportes"
           description="Visualizá indicadores clave y estadísticas del club."
           to="/reportes"
-          icon={LuBarChart3}
+          icon={LuChartBar}
         />
       </SimpleGrid>
     </Box>

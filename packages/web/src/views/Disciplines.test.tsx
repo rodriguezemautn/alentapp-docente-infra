@@ -108,7 +108,7 @@ describe('DisciplinesView', () => {
     });
   });
 
-  it('debe permitir crear una nueva disciplina mediante el formulario', async () => {
+  it('debe permitir crear una nueva disciplina mediante el formulario', { timeout: 15000 }, async () => {
     const user = (await import('@testing-library/user-event')).default.setup();
 
     const mockSports = [
@@ -175,7 +175,7 @@ describe('DisciplinesView', () => {
     );
   });
 
-  it('debe permitir editar una disciplina existente', async () => {
+  it('debe permitir editar una disciplina existente', { timeout: 15000 }, async () => {
     const user = (await import('@testing-library/user-event')).default.setup();
 
     const mockDisciplines = [

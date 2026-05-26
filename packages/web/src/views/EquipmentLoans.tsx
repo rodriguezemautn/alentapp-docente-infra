@@ -13,7 +13,7 @@ import {
   Input,
   Badge,
 } from "@chakra-ui/react";
-import { LuPlus, LuTrash2, LuRefreshCw, LuUndo2, LuAlertTriangle } from "react-icons/lu";
+import { LuPlus, LuTrash2, LuRefreshCw, LuUndo2, LuTriangleAlert } from "react-icons/lu";
 import { useState } from "react";
 import { equipmentLoansService } from "../services/equipment-loans";
 import type { EquipmentLoanDetailDTO, CreateEquipmentLoanRequest } from "@alentapp/shared";
@@ -258,7 +258,7 @@ export function EquipmentLoansView() {
                               title="Reportar como perdido"
                               onClick={() => handleReportLost(loan.id)}
                             >
-                              <LuAlertTriangle />
+                              <LuTriangleAlert />
                             </IconButton>
                           </>
                         )}
