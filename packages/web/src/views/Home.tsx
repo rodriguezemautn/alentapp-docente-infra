@@ -1,11 +1,7 @@
 import { Box, SimpleGrid, Heading, Text, VStack } from "@chakra-ui/react";
 import {
-  LuUsers,
-  LuTrophy,
-  LuCreditCard,
-  LuFileText,
-  LuListTree,
   LuDoorOpen,
+  LuPackage,
 } from "react-icons/lu";
 import { SectionCard } from "../components/SectionCard";
 
@@ -71,6 +67,13 @@ export function HomeView() {
           description="Gestioná los casilleros del club, sus asignaciones y estados."
           to="/casilleros"
           icon={LuDoorOpen}
+        />
+
+        <SectionCard
+          title="Préstamos de Equipamiento"
+          description="Registrá y gestioná el material deportivo prestado a socios."
+          to="/prestamos-equipamiento"
+          icon={LuPackage}
         />
       </SimpleGrid>
     </Box>

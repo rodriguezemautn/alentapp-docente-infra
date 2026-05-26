@@ -7,6 +7,7 @@ import { PaymentsView } from "./views/Payments";
 import { MedicalCertificatesView } from "./views/MedicalCertificates";
 import { DisciplinesView } from "./views/Disciplines";
 import { LockersView } from "./views/Lockers";
+import { EquipmentLoansView } from "./views/EquipmentLoans";
 import { HomeView } from "./views/Home";
 import Layout from "./Layout";
 
@@ -49,6 +50,10 @@ export let router = createBrowserRouter([
       {
         path: "/casilleros",
         Component: withErrorBoundary(LockersView),
+      },
+      {
+        path: "/prestamos-equipamiento",
+        Component: withErrorBoundary(EquipmentLoansView),
       },
     ],
   },

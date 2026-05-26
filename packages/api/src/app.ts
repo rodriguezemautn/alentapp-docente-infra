@@ -43,6 +43,15 @@ import { UpdateLockerUseCase } from './application/UpdateLockerUseCase.js';
 import { DeleteLockerUseCase } from './application/DeleteLockerUseCase.js';
 import { LockerController } from './delivery/LockerController.js';
 import { GetLockerHistoryUseCase } from './application/GetLockerHistoryUseCase.js';
+import { PostgresEquipmentLoanRepository } from './infrastructure/PostgresEquipmentLoanRepository.js';
+import { EquipmentLoanValidator } from './domain/services/EquipmentLoanValidator.js';
+import { CreateEquipmentLoanUseCase } from './application/CreateEquipmentLoanUseCase.js';
+import { GetEquipmentLoansUseCase } from './application/GetEquipmentLoansUseCase.js';
+import { GetEquipmentLoanByIdUseCase } from './application/GetEquipmentLoanByIdUseCase.js';
+import { ReturnEquipmentLoanUseCase } from './application/ReturnEquipmentLoanUseCase.js';
+import { ReportLostEquipmentLoanUseCase } from './application/ReportLostEquipmentLoanUseCase.js';
+import { DeleteEquipmentLoanUseCase } from './application/DeleteEquipmentLoanUseCase.js';
+import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -194,6 +203,32 @@ export function buildApp() {
         return rep.status(500).send({ error: error.message });
       }
     });
+
+    const equipmentLoanRepo = new PostgresEquipmentLoanRepository();
+    const equipmentLoanValidator = new EquipmentLoanValidator();
+
+    const createEquipmentLoanUseCase = new CreateEquipmentLoanUseCase(equipmentLoanRepo, memberRepo, equipmentLoanValidator);
+    const getEquipmentLoansUseCase = new GetEquipmentLoansUseCase(equipmentLoanRepo);
+    const getEquipmentLoanByIdUseCase = new GetEquipmentLoanByIdUseCase(equipmentLoanRepo);
+    const returnEquipmentLoanUseCase = new ReturnEquipmentLoanUseCase(equipmentLoanRepo, equipmentLoanValidator);
+    const reportLostEquipmentLoanUseCase = new ReportLostEquipmentLoanUseCase(equipmentLoanRepo, equipmentLoanValidator);
+    const deleteEquipmentLoanUseCase = new DeleteEquipmentLoanUseCase(equipmentLoanRepo, equipmentLoanValidator);
+
+    const equipmentLoanController = new EquipmentLoanController(
+      createEquipmentLoanUseCase,
+      getEquipmentLoansUseCase,
+      getEquipmentLoanByIdUseCase,
+      returnEquipmentLoanUseCase,
+      reportLostEquipmentLoanUseCase,
+      deleteEquipmentLoanUseCase,
+    );
+
+    server.post('/api/v1/prestamos-equipamiento', equipmentLoanController.create.bind(equipmentLoanController));
+    server.get('/api/v1/prestamos-equipamiento', equipmentLoanController.getAll.bind(equipmentLoanController));
+    server.get('/api/v1/prestamos-equipamiento/:id', equipmentLoanController.getById.bind(equipmentLoanController));
+    server.put('/api/v1/prestamos-equipamiento/:id/return', equipmentLoanController.returnLoan.bind(equipmentLoanController));
+    server.put('/api/v1/prestamos-equipamiento/:id/report-lost', equipmentLoanController.reportLost.bind(equipmentLoanController));
+    server.delete('/api/v1/prestamos-equipamiento/:id', equipmentLoanController.delete.bind(equipmentLoanController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
