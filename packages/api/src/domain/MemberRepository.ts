@@ -1,4 +1,4 @@
-import { MemberDTO, UpdateMemberRequest } from '@alentapp/shared';
+import { MemberDTO, UpdateMemberRequest, MemberReportResponse } from '@alentapp/shared';
 
 // Esta interfaz es el "Puerto de Salida". El dominio dice: 
 // "No me importa si usás Postgres o Mongo, dame un objeto que cumpla esto".
@@ -10,4 +10,5 @@ export interface MemberRepository {
   findAll(): Promise<MemberDTO[]>;
   update(id: string, data: UpdateMemberRequest): Promise<MemberDTO>;
   delete(id: string): Promise<void>;
+  getMemberReport(): Promise<MemberReportResponse>;
 }

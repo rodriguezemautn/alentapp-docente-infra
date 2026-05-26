@@ -52,6 +52,11 @@ import { ReturnEquipmentLoanUseCase } from './application/ReturnEquipmentLoanUse
 import { ReportLostEquipmentLoanUseCase } from './application/ReportLostEquipmentLoanUseCase.js';
 import { DeleteEquipmentLoanUseCase } from './application/DeleteEquipmentLoanUseCase.js';
 import { EquipmentLoanController } from './delivery/EquipmentLoanController.js';
+import { GetIncomeReportUseCase } from './application/GetIncomeReportUseCase.js';
+import { GetLockerReportUseCase } from './application/GetLockerReportUseCase.js';
+import { GetMaterialReportUseCase } from './application/GetMaterialReportUseCase.js';
+import { GetMemberReportUseCase } from './application/GetMemberReportUseCase.js';
+import { ReportController } from './delivery/ReportController.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -229,6 +234,23 @@ export function buildApp() {
     server.put('/api/v1/prestamos-equipamiento/:id/return', equipmentLoanController.returnLoan.bind(equipmentLoanController));
     server.put('/api/v1/prestamos-equipamiento/:id/report-lost', equipmentLoanController.reportLost.bind(equipmentLoanController));
     server.delete('/api/v1/prestamos-equipamiento/:id', equipmentLoanController.delete.bind(equipmentLoanController));
+
+    const incomeReportUseCase = new GetIncomeReportUseCase(paymentRepo);
+    const lockerReportUseCase = new GetLockerReportUseCase(lockerRepo);
+    const materialReportUseCase = new GetMaterialReportUseCase(equipmentLoanRepo);
+    const memberReportUseCase = new GetMemberReportUseCase(memberRepo);
+
+    const reportController = new ReportController(
+      incomeReportUseCase,
+      lockerReportUseCase,
+      materialReportUseCase,
+      memberReportUseCase,
+    );
+
+    server.get('/api/v1/reportes/ingresos', reportController.getIncomeReport.bind(reportController));
+    server.get('/api/v1/reportes/casilleros', reportController.getLockerReport.bind(reportController));
+    server.get('/api/v1/reportes/material', reportController.getMaterialReport.bind(reportController));
+    server.get('/api/v1/reportes/socios', reportController.getMemberReport.bind(reportController));
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })

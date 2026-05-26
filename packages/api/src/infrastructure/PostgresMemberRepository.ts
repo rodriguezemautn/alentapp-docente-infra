@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/client/client.js';
 import { MemberRepository } from '../domain/MemberRepository.js';
-import { MemberDTO, CreateMemberRequest, UpdateMemberRequest } from '@alentapp/shared';
+import { MemberDTO, CreateMemberRequest, UpdateMemberRequest, MemberReportResponse } from '@alentapp/shared';
 
 if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL environment variable is not set');
@@ -83,6 +83,43 @@ export class PostgresMemberRepository implements MemberRepository {
         });
     }
 
+    async getMemberReport(): Promise<MemberReportResponse> {
+        const [members, monthlyData] = await Promise.all([
+            prisma.member.findMany(),
+            prisma.$queryRaw<Array<{ month: string; count: bigint }>>`
+                SELECT TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*)::bigint as count
+                FROM members
+                WHERE created_at >= NOW() - INTERVAL '12 months'
+                GROUP BY month
+                ORDER BY month ASC
+            `,
+        ]);
+
+        const total = members.length;
+        const byCategory = { Pleno: 0, Cadete: 0, Honorario: 0 };
+        const byStatus = { Activo: 0, Moroso: 0, Suspendido: 0 };
+
+        for (const m of members) {
+            const cat = m.category as keyof typeof byCategory;
+            if (cat in byCategory) byCategory[cat]++;
+            const st = m.status as keyof typeof byStatus;
+            if (st in byStatus) byStatus[st]++;
+        }
+
+        const delinquencyRate = total > 0 ? Math.round((byStatus.Moroso / total) * 100) : 0;
+
+        return {
+            total,
+            byCategory,
+            byStatus,
+            delinquencyRate,
+            monthlyRegistrations: monthlyData.map((m) => ({
+                month: m.month,
+                count: Number(m.count),
+            })),
+        };
+    }
+
     private mapToDTO(member: DBMember): MemberDTO {
         return {
             id: member.id,
@@ -92,6 +129,7 @@ export class PostgresMemberRepository implements MemberRepository {
             birthdate: member.birthdate ? member.birthdate.toISOString().split('T')[0] : '', // Extract YYYY-MM-DD
             category: member.category,
             status: member.status,
+            sportCategory: (member as any).sportCategory || undefined,
             created_at: member.created_at.toISOString(),
         };
     }

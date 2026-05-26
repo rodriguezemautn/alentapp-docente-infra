@@ -1,4 +1,4 @@
-import { LockerDTO, LockerDetailDTO, CreateLockerRequest, UpdateLockerRequest, LockerAssignmentLogDTO } from '@alentapp/shared';
+import { LockerDTO, LockerDetailDTO, CreateLockerRequest, UpdateLockerRequest, LockerAssignmentLogDTO, LockerReportResponse } from '@alentapp/shared';
 
 export interface LockerRepository {
   create(data: CreateLockerRequest): Promise<LockerDTO>;
@@ -7,6 +7,7 @@ export interface LockerRepository {
   findAll(status?: string): Promise<LockerDetailDTO[]>;
   update(id: string, data: UpdateLockerRequest): Promise<LockerDTO>;
   delete(id: string): Promise<void>;
+  getLockerReport(): Promise<LockerReportResponse>;
 }
 
 export interface LockerAssignmentLogRepository {
