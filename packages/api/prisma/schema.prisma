@@ -35,6 +35,9 @@ model Member {
     created_at DateTime       @default(now())
     payments            Payment[]
     medicalCertificates  MedicalCertificate[]
+    lockers             Locker[]
+    equipmentLoans      EquipmentLoan[]
+    lockerAssignmentLogs LockerAssignmentLog[]
 
     @@map("members") // Para que en la DB la tabla se llame 'members' en minúscula
 }
@@ -102,4 +105,42 @@ model MedicalCertificate {
     created_at      DateTime  @default(now())
 
     @@map("medical_certificates")
+}
+
+enum LockerStatus {
+    Available
+    Occupied
+    Maintenance
+}
+
+model Locker {
+    id         String       @id @default(uuid())
+    number     Int          @unique
+    location   String?
+    status     LockerStatus @default(Available)
+    memberId   String?
+    member     Member?      @relation(fields: [memberId], references: [id])
+    created_at DateTime     @default(now())
+    assignmentLogs LockerAssignmentLog[]
+
+    @@map("lockers")
+}
+
+enum LockerEventType {
+    Assignment
+    Release
+}
+
+model LockerAssignmentLog {
+    id         String           @id @default(uuid())
+    lockerId   String
+    locker     Locker           @relation(fields: [lockerId], references: [id])
+    memberId   String
+    member     Member           @relation(fields: [memberId], references: [id])
+    eventType  LockerEventType
+    assignedAt DateTime         @default(now())
+    releasedAt DateTime?
+    created_at DateTime         @default(now())
+
+    @@map("locker_assignment_logs")
 }

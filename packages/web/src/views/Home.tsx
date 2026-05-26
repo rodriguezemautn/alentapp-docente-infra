@@ -5,6 +5,7 @@ import {
   LuCreditCard,
   LuFileText,
   LuListTree,
+  LuDoorOpen,
 } from "react-icons/lu";
 import { SectionCard } from "../components/SectionCard";
 
@@ -63,6 +64,13 @@ export function HomeView() {
           description="Administrá las divisiones y variantes de cada deporte con sus horarios y profesores."
           to="/disciplinas"
           icon={LuListTree}
+        />
+
+        <SectionCard
+          title="Casilleros"
+          description="Gestioná los casilleros del club, sus asignaciones y estados."
+          to="/casilleros"
+          icon={LuDoorOpen}
         />
       </SimpleGrid>
     </Box>

@@ -48,3 +48,23 @@ export const PAYMENT_STATUSES_FILTER = createListCollection({
     { label: "Cancelado", value: "Canceled" },
   ],
 });
+
+// ==========================================
+// Locker
+// ==========================================
+export const LOCKER_STATUSES = createListCollection({
+  items: [
+    { label: "Disponible", value: "Available" },
+    { label: "Ocupado", value: "Occupied" },
+    { label: "Mantenimiento", value: "Maintenance" },
+  ],
+});
+
+export const LOCKER_STATUS_FILTER = createListCollection({
+  items: [
+    { label: "Todos los estados", value: "" },
+    { label: "Disponible", value: "Available" },
+    { label: "Ocupado", value: "Occupied" },
+    { label: "Mantenimiento", value: "Maintenance" },
+  ],
+});

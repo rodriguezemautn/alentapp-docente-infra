@@ -34,6 +34,15 @@ import { GetDisciplineByIdUseCase } from './application/GetDisciplineByIdUseCase
 import { UpdateDisciplineUseCase } from './application/UpdateDisciplineUseCase.js';
 import { DeleteDisciplineUseCase } from './application/DeleteDisciplineUseCase.js';
 import { DisciplineController } from './delivery/DisciplineController.js';
+import { PostgresLockerRepository, PostgresLockerAssignmentLogRepository } from './infrastructure/PostgresLockerRepository.js';
+import { LockerValidator } from './domain/services/LockerValidator.js';
+import { CreateLockerUseCase } from './application/CreateLockerUseCase.js';
+import { GetLockersUseCase } from './application/GetLockersUseCase.js';
+import { GetLockerByIdUseCase } from './application/GetLockerByIdUseCase.js';
+import { UpdateLockerUseCase } from './application/UpdateLockerUseCase.js';
+import { DeleteLockerUseCase } from './application/DeleteLockerUseCase.js';
+import { LockerController } from './delivery/LockerController.js';
+import { GetLockerHistoryUseCase } from './application/GetLockerHistoryUseCase.js';
 
 export function buildApp() {
     const server = Fastify({
@@ -151,6 +160,40 @@ export function buildApp() {
     server.get('/api/v1/disciplinas/:id', disciplineController.getById.bind(disciplineController));
     server.put('/api/v1/disciplinas/:id', disciplineController.update.bind(disciplineController));
     server.delete('/api/v1/disciplinas/:id', disciplineController.delete.bind(disciplineController));
+
+    const lockerRepo = new PostgresLockerRepository();
+    const lockerValidator = new LockerValidator(lockerRepo);
+    const lockerLogRepo = new PostgresLockerAssignmentLogRepository();
+
+    const createLockerUseCase = new CreateLockerUseCase(lockerRepo, lockerValidator);
+    const getLockersUseCase = new GetLockersUseCase(lockerRepo);
+    const getLockerByIdUseCase = new GetLockerByIdUseCase(lockerRepo);
+    const updateLockerUseCase = new UpdateLockerUseCase(lockerRepo, lockerValidator);
+    const deleteLockerUseCase = new DeleteLockerUseCase(lockerRepo, lockerValidator);
+    const getLockerHistoryUseCase = new GetLockerHistoryUseCase(lockerLogRepo);
+
+    const lockerController = new LockerController(
+      createLockerUseCase,
+      getLockersUseCase,
+      getLockerByIdUseCase,
+      updateLockerUseCase,
+      deleteLockerUseCase,
+    );
+
+    server.post('/api/v1/casilleros', lockerController.create.bind(lockerController));
+    server.get('/api/v1/casilleros', lockerController.getAll.bind(lockerController));
+    server.get('/api/v1/casilleros/:id', lockerController.getById.bind(lockerController));
+    server.put('/api/v1/casilleros/:id', lockerController.update.bind(lockerController));
+    server.delete('/api/v1/casilleros/:id', lockerController.delete.bind(lockerController));
+    server.get('/api/v1/historial/casilleros', async (req, rep) => {
+      try {
+        const { lockerId, memberId } = req.query as { lockerId?: string; memberId?: string };
+        const history = await getLockerHistoryUseCase.execute({ lockerId, memberId });
+        return rep.status(200).send({ data: history });
+      } catch (error: any) {
+        return rep.status(500).send({ error: error.message });
+      }
+    });
 
     server.get('/', async (req, rep) => {
         rep.status(200).send({ msg: 'asd' })
