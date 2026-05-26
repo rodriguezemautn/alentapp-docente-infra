@@ -13,12 +13,17 @@ export class ReportController {
     ) {}
 
     async getIncomeReport(
-        request: FastifyRequest<{ Querystring: { from: string; to: string; groupBy?: string } }>,
+        request: FastifyRequest<{ Querystring: { from?: string; to?: string; groupBy?: string } }>,
         reply: FastifyReply,
     ) {
         try {
             const { from, to, groupBy } = request.query;
-            const report = await this.incomeReportUseCase.execute(from, to, groupBy);
+            const defaults = {
+                from: from || '2020-01-01',
+                to: to || new Date(Date.now() + 86400000).toISOString().split('T')[0], // mañana para cubrir todo hoy
+                groupBy: groupBy || 'month',
+            };
+            const report = await this.incomeReportUseCase.execute(defaults.from, defaults.to, defaults.groupBy);
             return reply.status(200).send({ data: report });
         } catch (error: any) {
             if (error.message.includes('no puede ser posterior') || error.message.includes('Agrupación no válida')) {

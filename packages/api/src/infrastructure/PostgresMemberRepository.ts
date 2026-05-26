@@ -71,6 +71,7 @@ export class PostgresMemberRepository implements MemberRepository {
                 ...(data.birthdate && { birthdate: new Date(data.birthdate) }),
                 ...(data.category && { category: data.category }),
                 ...(data.status && { status: data.status }),
+                ...(data.sportCategory !== undefined && { sportCategory: data.sportCategory }),
             },
         });
 

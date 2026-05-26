@@ -35,15 +35,6 @@ export interface CreateMemberRequest {
   category: MemberCategory;
 }
 
-export interface UpdateMemberRequest {
-  dni?: string;
-  name?: string;
-  email?: string;
-  birthdate?: string; // ISO Date String (YYYY-MM-DD)
-  category?: MemberCategory;
-  status?: MemberStatus;
-}
-
 // ==========================================
 // Sport
 // ==========================================

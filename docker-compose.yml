@@ -33,8 +33,8 @@ services:
         ports:
             - '3000:3000'
         command: >
-            sh -c "npx prisma migrate deploy &&
-             npx prisma generate &&
+            sh -c "npx prisma migrate deploy --config packages/api/prisma.config.ts &&
+             npx prisma generate --config packages/api/prisma.config.ts &&
              npx tsx watch packages/api/src/app.ts"
         depends_on:
             db:
