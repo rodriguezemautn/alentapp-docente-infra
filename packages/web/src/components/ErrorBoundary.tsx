@@ -38,6 +38,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         <Box p="12" maxW="600px" mx="auto" mt="8">
           <VStack gap="6" align="center" textAlign="center">
             <Box color="red.400">
+<<<<<<< HEAD
               <LuTriangleAlert size="48" />
             </Box>
             <Heading size="xl">Algo salió mal</Heading>
