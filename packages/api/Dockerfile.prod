@@ -1,5 +1,5 @@
 # =============================================================================
-# Stage 1: Dependencies
+# Stage 1: Dependencies (solo producción)
 # =============================================================================
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -8,31 +8,30 @@ WORKDIR /app
 COPY package*.json ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/shared/package.json ./packages/shared/
-COPY packages/web/package.json ./packages/web/
 
-# Install production dependencies only
+# Install production dependencies only, clean cache in same layer
 RUN npm ci --omit=dev && npm cache clean --force
 
 # =============================================================================
-# Stage 2: Build
+# Stage 2: Build (compilar TypeScript)
 # =============================================================================
 FROM node:22-alpine AS build
 WORKDIR /app
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package*.json ./
+# Copy ALL manifests (necesitamos dev deps para compilar)
+COPY package*.json ./
+COPY packages/api/package.json ./packages/api/
+COPY packages/shared/package.json ./packages/shared/
 
-# Copy source code for api and shared (web only needs package.json for workspace resolution)
+RUN npm ci
+
+# Copy source code
 COPY packages/api ./packages/api
 COPY packages/shared ./packages/shared
-COPY packages/web/package.json ./packages/web/
-
-# Compile TypeScript using project references
-# Build: transpile TypeScript
-# The project uses tsx (ESM) at runtime, so we compile the source
 COPY tsconfig.json ./
-RUN npx tsc --project tsconfig.json \
+
+# Compile TypeScript
+RUN ./node_modules/.bin/tsc --project tsconfig.json \
   --outDir packages/api/dist \
   --rootDir . \
   --declaration false \
@@ -40,13 +39,16 @@ RUN npx tsc --project tsconfig.json \
   --esModuleInterop \
   --module NodeNext \
   --moduleResolution NodeNext \
-  --target ES2022 \
-  packages/api/src/app.ts
+  --target ES2022
 
 # =============================================================================
 # Stage 3: Runtime
 # =============================================================================
 FROM node:22-alpine AS runtime
+
+# Instalar wget para HEALTHCHECK (único paquete del sistema)
+RUN apk add --no-cache wget
+
 WORKDIR /app
 
 # Create non-root user
@@ -60,7 +62,10 @@ COPY --from=deps /app/package*.json ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/api/prisma ./packages/api/prisma
 
-# Healthcheck against Fastify server
+# Generate Prisma client for runtime
+RUN ./node_modules/.bin/prisma generate --config packages/api/prisma.config.ts
+
+# Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
 

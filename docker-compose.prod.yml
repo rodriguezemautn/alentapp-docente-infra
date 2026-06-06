@@ -96,6 +96,9 @@ services:
     security_opt:
       - no-new-privileges:true
     read_only: true
+    tmpfs:
+      - /var/run
+      - /var/cache/nginx
     cap_drop:
       - ALL
     cap_add:
