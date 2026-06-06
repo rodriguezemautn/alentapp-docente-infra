@@ -13,7 +13,8 @@
 SHELL := /bin/bash
 .PHONY: help dev dev-down dev-logs dev-rebuild \
         test test-api test-web test-watch test-coverage test-report \
-        prod prod-down prod-build prod-logs \
+        prod prod-down prod-build prod-logs prod-check \
+        obs obs-up obs-down obs-logs obs-rebuild \
         seed release clean
 
 # ──────────────────────────────────────────────
@@ -158,6 +159,43 @@ prod-check: ## Verifica que todos los servicios estén healthy
 	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:3000/ || echo "  ⚠️  API not reachable"
 	@echo "🌐 Web health:"
 	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:80/ || echo "  ⚠️  Web not reachable"
+
+# ──────────────────────────────────────────────
+# OBSERVABILIDAD
+# ──────────────────────────────────────────────
+
+obs: ## Levanta stack de observabilidad (Prometheus + Grafana + Alertmanager + cAdvisor + node-exporter)
+	@echo "📊 Starting observability stack..."
+	docker compose -f observability/docker-compose.obs.yml up -d
+	@echo ""
+	@echo "  📈 Grafana:     http://localhost:3001  (admin / admin)"
+	@echo "  📉 Prometheus:  http://localhost:9090"
+	@echo "  🔔 Alertmanager: http://localhost:9093"
+	@echo "  🖥️  cAdvisor:    http://localhost:8080"
+	@echo "  💻 node-exporter: http://localhost:9100"
+	@echo ""
+
+obs-down: ## Detiene stack de observabilidad
+	docker compose -f observability/docker-compose.obs.yml down
+
+obs-logs: ## Logs de observabilidad
+	docker compose -f observability/docker-compose.obs.yml logs -f
+
+obs-rebuild: ## Reconstruye y reinicia stack de observabilidad
+	docker compose -f observability/docker-compose.obs.yml up -d --build
+
+obs-check: ## Verifica estado del stack de observabilidad
+	@echo "🔍 Checking observability stack..."
+	@docker compose -f observability/docker-compose.obs.yml ps --format "table {{.Name}}\t{{.Status}}"
+	@echo ""
+	@echo "📈 Grafana:"
+	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:3001/api/health || echo "  ⚠️  Grafana not reachable"
+	@echo "📉 Prometheus:"
+	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:9090/-/healthy || echo "  ⚠️  Prometheus not reachable"
+	@echo "🔔 Alertmanager:"
+	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:9093/-/healthy || echo "  ⚠️  Alertmanager not reachable"
+	@echo "🖥️  cAdvisor:"
+	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:8080/ || echo "  ⚠️  cAdvisor not reachable"
 
 # ──────────────────────────────────────────────
 # DATOS
