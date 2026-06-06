@@ -1,0 +1,60 @@
+# Alertas Prometheus — Alentapp API
+groups:
+  - name: alentapp-api
+    rules:
+      # API Down: no recibe métricas por más de 1 minuto
+      - alert: API_Down
+        expr: absent(up{job="alentapp-api-otel"}) or up{job="alentapp-api-otel"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'API Alentapp no responde'
+          description: 'No se reciben métricas de la API desde hace más de 1 minuto.'
+
+      # High Error Rate: más del 5% de errores en 5 minutos
+      - alert: HighErrorRate
+        expr: |
+          (sum(rate(http_requests_total{status=~"5.."}[5m])) 
+           / 
+           sum(rate(http_requests_total[5m]))) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Tasa de error alta ({{ $value | humanize }}%)'
+          description: 'La tasa de errores 5xx superó el 5% en los últimos 5 minutos.'
+
+      # High Latency: p99 mayor a 2 segundos
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Latencia p99 alta ({{ $value | humanize }}s)'
+          description: 'La latencia p99 superó los 2 segundos en los últimos 5 minutos.'
+
+      # High Memory: más del 80% de memoria utilizada
+      - alert: HighMemoryUsage
+        expr: |
+          (process_memory_usage_bytes / 1024 / 1024) > 400
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Memoria alta ({{ $value | humanize }}MB)'
+          description: 'La memoria del proceso superó los 400MB en los últimos 5 minutos.'
+
+  - name: alentapp-infra
+    rules:
+      # Container down
+      - alert: ContainerDown
+        expr: up{job="cadvisor"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Contenedor {{ $labels.container }} caído'
+          description: 'El contenedor {{ $labels.container }} no reporta métricas.'

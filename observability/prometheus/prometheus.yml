@@ -1,21 +1,49 @@
 # Prometheus — Configuración
-# Este archivo le dice a Prometheus qué servicios monitorear y cada cuánto.
-
 global:
-  scrape_interval: 15s      # Cada 15s consulta métricas
-  evaluation_interval: 15s  # Cada 15s evalúa reglas de alerta
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Reglas de alerta
+rule_files:
+  - 'rules/*.yml'
 
 scrape_configs:
-  # Métricas de la API de Alentapp
-  - job_name: 'alentapp-api'
+  # Métricas OpenTelemetry de la API (vía OTel PrometheusExporter)
+  - job_name: 'alentapp-api-otel'
     static_configs:
-      - targets: ['host.docker.internal:3000']  # La API corre en el host
+      - targets: ['host.docker.internal:9464']
         labels:
           app: 'alentapp'
           service: 'api'
-          environment: 'development'
+          telemetry: 'opentelemetry'
 
-  # Métricas de Prometheus mismo (para verificar que funciona)
+  # Métricas fastify-metrics (solo dev — en prod se usa OTel en :9464)
+  - job_name: 'alentapp-api-fastify'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+        labels:
+          app: 'alentapp'
+          service: 'api'
+          telemetry: 'fastify'
+    metrics_path: '/metrics'
+
+  # cAdvisor — métricas de contenedores (CPU, memoria, disco, red)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+        labels:
+          app: 'alentapp'
+          service: 'infra'
+
+  # node_exporter — métricas del host
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+        labels:
+          app: 'alentapp'
+          service: 'infra'
+
+  # Prometheus self-monitoring
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']

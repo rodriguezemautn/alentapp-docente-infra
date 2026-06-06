@@ -1,3 +1,6 @@
+// PRIMERO: inicializar OpenTelemetry (antes de cualquier otro import)
+import './infrastructure/telemetry.js';
+
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import metrics from 'fastify-metrics';
@@ -79,8 +82,10 @@ export function buildApp() {
         credentials: true,
     });
 
-    // Métricas Prometheus (debe registrarse antes de las rutas)
-    server.register(metrics, { endpoint: '/metrics' });
+    // Métricas: OTel en producción (vía :9464/metrics), fastify-metrics en desarrollo
+    if (process.env.NODE_ENV !== 'production') {
+        server.register(metrics, { endpoint: '/metrics' });
+    }
 
     const memberRepo = new PostgresMemberRepository();
     const memberValidator = new MemberValidator(memberRepo);

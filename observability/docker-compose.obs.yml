@@ -1,13 +1,15 @@
 # ============================================
-# Observabilidad Stack — Alentapp Docente
+# Observabilidad Stack Pro — Alentapp Docente
 # ============================================
-# Prometheus + Grafana para monitoreo de la API.
+# Stack completo: Prometheus + Alertmanager + Grafana + cAdvisor + node_exporter
 #
 # Uso: docker compose -f observability/docker-compose.obs.yml up -d
 # Accesos:
-#   Grafana:  http://localhost:3001  (admin / admin)
-#   Prometheus: http://localhost:9090
-#   Métricas API: http://localhost:3000/metrics
+#   Grafana:     http://localhost:3001  (admin / admin)
+#   Prometheus:  http://localhost:9090
+#   Alertmanager: http://localhost:9093
+#   cAdvisor:    http://localhost:8080
+#   Métricas API OTel: http://localhost:9464/metrics
 
 services:
   prometheus:
@@ -15,6 +17,7 @@ services:
     container_name: alentapp-prometheus
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules
       - prometheus_data:/prometheus
     ports:
       - '9090:9090'
@@ -26,6 +29,25 @@ services:
       - '--web.enable-lifecycle'
     healthcheck:
       test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - obs-net
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alentapp-alertmanager
+    ports:
+      - '9093:9093'
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - alertmanager_data:/alertmanager
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:9093/-/healthy || exit 1']
       interval: 10s
       timeout: 5s
       retries: 3
@@ -57,9 +79,41 @@ services:
     networks:
       - obs-net
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: alentapp-cadvisor
+    ports:
+      - '8080:8080'
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    restart: unless-stopped
+    networks:
+      - obs-net
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: alentapp-node-exporter
+    ports:
+      - '9100:9100'
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - /:/host:ro,rslave
+    restart: unless-stopped
+    networks:
+      - obs-net
+
 volumes:
   prometheus_data:
   grafana_data:
+  alertmanager_data:
 
 networks:
   obs-net:
