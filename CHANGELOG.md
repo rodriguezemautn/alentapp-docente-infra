@@ -1,4 +1,42 @@
 
+## [1.1.0] — 2026-06-06
+
+### Added
+
+- **Infraestructura Docker:** Makefile con targets dev/test/prod/seed/check/release
+- **Infraestructura Docker:** docker-compose.prod.yml con hardening (read-only, tmpfs, capabilities drop)
+- **Infraestructura Docker:** Dockerfile.prod multi-stage para API (node:22-alpine) y Web (nginx:stable-alpine)
+- **Infraestructura Docker:** nginx.conf con gzip, cache y security headers
+- **Infraestructura Docker:** .env.example con variables de entorno y defaults seguros
+- **Infraestructura Docker:** CI/CD pipeline (GitHub Actions - test → build → push → deploy)
+- **Documentación:** Actividad 4 "Preparando para Producción" (590 líneas)
+- **Documentación:** Notas académicas de infraestructura Docker (13-docker-infraestructura.md)
+- **Documentación:** Análisis de infraestructura Docker (docker-analysis.md)
+- **Tooling:** Linter para API (`packages/api/eslint.config.js` con typescript-eslint)
+- **Tooling:** Helper `getErrorMessage()` para tipado seguro en catch blocks
+
+### Changed
+
+- **docker-compose.yml:** Agregado env_file, healthchecks en API, resource limits, restart policies, redes aisladas (alentapp-net)
+- **.dockerignore:** Expandido para excluir builds, coverage, .env, docs, etc.
+- **Lint Frontend:** 46 errores corregidos (no-explicit-any, unused-vars, prefer-const, react-refresh, set-state-in-effect)
+- **API Lint:** Archivos generados de Prisma ignorados, 15 issues de código corregidos
+- **Lint-staged:** Agregado eslint --fix para API y Web en pre-commit
+- **Cobertura LockerController:** Tests expandidos de 5 a 18 (cubre update, delete y todos los error paths)
+
+### Removed
+
+- Ramas obsoletas eliminadas: feat/discipline-backend, feat/frontend-fixes, feat/mc-backend, feat/mc-frontend, feat/infra-docker
+- prettier removido de lint-staged (no estaba instalado en el proyecto)
+
+### Fixed
+
+- `catch (err: any)` reemplazado por `catch (err: unknown)` + `getErrorMessage()` en 16 lugares del frontend
+- Unused imports y variables en API (15 lugares): controllers, validators, repositories, tests
+- `let` → `const` en routes.tsx
+- Linter ahora ignora coverage/ directory en web y API
+- eslint-disable añadido a archivos boilerplate de Chakra UI (color-mode, dialog, toaster)
+
 ## [1.0.0](https://github.com/rodriguezemautn/alentapp-docente-infra/compare/4a2127f5606b5ee50b62261bce0311cf58c616b5...v1.0.0) (2026-05-25)
 
 ### Features
@@ -25,6 +63,7 @@
 * rename routes.ts to routes.tsx (JSX detection by oxc) ([02da504](https://github.com/rodriguezemautn/alentapp-docente-infra/commit/02da504a50243c4994eb7a2315d5d4bfbedca80f))
 * separa SportCategory de MemberCategory en TDD-0009 ([0191ae4](https://github.com/rodriguezemautn/alentapp-docente-infra/commit/0191ae469edb121552677ff8cad078241f4af220))
 * **web:** restore Home.tsx with all 5 entity cards ([8e55de0](https://github.com/rodriguezemautn/alentapp-docente-infra/commit/8e55de08d1b955e3b61e31ddc976aeeb4f65aff7))
+
 # CHANGELOG
 
 Todas las modificaciones notables en este proyecto se documentarán en este archivo.
