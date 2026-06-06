@@ -1,0 +1,79 @@
+{
+  "title": "Alentapp Business — Negocio",
+  "uid": "alentapp-business-dashboard",
+  "description": "Métricas de negocio: socios activos, préstamos, ingresos y ocupación",
+  "tags": ["alentapp", "business", "negocio"],
+  "timezone": "America/Argentina/Buenos_Aires",
+  "panels": [
+    {
+      "title": "Socios activos",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "business_members_active",
+          "legendFormat": "Socios activos"
+        }
+      ],
+      "description": "Cantidad de socios activos actualmente en el club"
+    },
+    {
+      "title": "Préstamos activos",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "expr": "business_loans_active",
+          "legendFormat": "Préstamos activos"
+        }
+      ],
+      "description": "Cantidad de préstamos de equipamiento activos"
+    },
+    {
+      "title": "Ocupación de casilleros",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "targets": [
+        {
+          "expr": "business_lockers_occupancy",
+          "legendFormat": "Ocupación %"
+        }
+      ],
+      "description": "Porcentaje de ocupación de casilleros"
+    },
+    {
+      "title": "Ingresos diarios (acumulado)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(business_revenue_daily_total[24h])",
+          "legendFormat": "Ingresos/día"
+        }
+      ],
+      "description": "Ingresos acumulados del día"
+    },
+    {
+      "title": "Resumen ejecutivo",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "business_members_active",
+          "legendFormat": "Socios"
+        },
+        {
+          "expr": "business_loans_active",
+          "legendFormat": "Préstamos"
+        },
+        {
+          "expr": "business_lockers_occupancy",
+          "legendFormat": "Ocupación"
+        }
+      ],
+      "description": "Vista rápida del estado actual del negocio"
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}

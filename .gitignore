@@ -21,6 +21,9 @@ test/test-report.json
 *.njsproj
 *.sln
 
+# Entorno local
+.env
+
 # Archivos sueltos del workspace (no del proyecto)
 README_original.md
 docs/ejemplo1.png

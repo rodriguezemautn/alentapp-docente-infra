@@ -16,7 +16,7 @@ export class CreateSportUseCase {
 
         return this.sportRepo.create({
             ...data,
-            description: data.description || null,
+            description: data.description ?? undefined,
         });
     }
 }

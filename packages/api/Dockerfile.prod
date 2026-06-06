@@ -10,7 +10,17 @@ COPY packages/api/package.json ./packages/api/
 COPY packages/shared/package.json ./packages/shared/
 
 # Install production dependencies only, clean cache in same layer
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && \
+    npm cache clean --force && \
+    rm -rf \
+        node_modules/typescript \
+        node_modules/prisma \
+        node_modules/vitest \
+        node_modules/tsx \
+        node_modules/.cache \
+        node_modules/@vitest \
+        node_modules/fast-check \
+        node_modules/hono
 
 # =============================================================================
 # Stage 2: Build (compilar TypeScript)
@@ -25,21 +35,20 @@ COPY packages/shared/package.json ./packages/shared/
 
 RUN npm ci
 
-# Copy source code
+# Copy source code (incluyendo prisma para generar cliente antes de compilar)
 COPY packages/api ./packages/api
 COPY packages/shared ./packages/shared
 COPY tsconfig.json ./
 
+# Generate Prisma client (necesario antes de tsc porque el codigo lo importa)
+RUN ./node_modules/.bin/prisma generate --config packages/api/prisma.config.ts
+
 # Compile TypeScript
-RUN ./node_modules/.bin/tsc --project tsconfig.json \
-  --outDir packages/api/dist \
-  --rootDir . \
-  --declaration false \
-  --skipLibCheck \
-  --esModuleInterop \
-  --module NodeNext \
-  --moduleResolution NodeNext \
-  --target ES2022
+COPY packages/api/tsconfig.json ./packages/api/
+RUN ./node_modules/.bin/tsc -p packages/api/tsconfig.json
+
+# Copy generated client to dist output (same relative path as compiled)
+RUN cp -r packages/api/src/generated packages/api/dist/api/src/generated
 
 # =============================================================================
 # Stage 3: Runtime
@@ -60,10 +69,6 @@ COPY --from=build /app/packages/shared ./packages/shared
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package*.json ./
 COPY packages/api/package.json ./packages/api/
-COPY packages/api/prisma ./packages/api/prisma
-
-# Generate Prisma client for runtime
-RUN ./node_modules/.bin/prisma generate --config packages/api/prisma.config.ts
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
@@ -71,4 +76,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 USER appuser
 EXPOSE 3000
-CMD ["node", "packages/api/dist/app.js"]
+CMD ["node", "packages/api/dist/api/src/app.js"]

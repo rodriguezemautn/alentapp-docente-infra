@@ -1,0 +1,112 @@
+{
+  "title": "Alentapp USE — Infraestructura",
+  "uid": "alentapp-use-dashboard",
+  "description": "Métricas USE (Utilization, Saturation, Errors) de contenedores con cAdvisor y node-exporter",
+  "tags": ["alentapp", "infra", "cadvisor", "use"],
+  "timezone": "America/Argentina/Buenos_Aires",
+  "panels": [
+    {
+      "title": "CPU Usage (contenedores Alentapp)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(container_cpu_usage_seconds_total{name=~\".*alentapp.*\"}[1m])",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "description": "Uso de CPU por contenedor de Alentapp en cores"
+    },
+    {
+      "title": "CPU Usage (sistema) — node-exporter",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(node_cpu_seconds_total{mode!=\"idle\"}[1m])",
+          "legendFormat": "{{mode}}"
+        }
+      ],
+      "description": "Uso de CPU del host por modo"
+    },
+    {
+      "title": "Memoria (contenedores Alentapp)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{name=~\".*alentapp.*\"} / 1024 / 1024",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "description": "Uso de memoria por contenedor de Alentapp en MB"
+    },
+    {
+      "title": "Memoria (host) — node-exporter",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "node_memory_MemTotal_bytes / 1024 / 1024",
+          "legendFormat": "Total (MB)"
+        },
+        {
+          "expr": "(node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes) / 1024 / 1024",
+          "legendFormat": "Usada (MB)"
+        }
+      ],
+      "description": "Memoria del host: total vs usada"
+    },
+    {
+      "title": "Red — Receive (contenedores Alentapp)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "rate(container_network_receive_bytes_total{name=~\".*alentapp.*\"}[1m])",
+          "legendFormat": "{{name}} RX"
+        }
+      ],
+      "description": "Tráfico de red entrante por contenedor en bytes/s"
+    },
+    {
+      "title": "Red — Transmit (contenedores Alentapp)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "rate(container_network_transmit_bytes_total{name=~\".*alentapp.*\"}[1m])",
+          "legendFormat": "{{name}} TX"
+        }
+      ],
+      "description": "Tráfico de red saliente por contenedor en bytes/s"
+    },
+    {
+      "title": "Uptime contenedores",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "time() - container_start_time_seconds{name=~\".*alentapp.*\"}",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "description": "Tiempo de actividad de cada contenedor Alentapp",
+      "format": "duration"
+    },
+    {
+      "title": "Filesystem usage (contenedores Alentapp)",
+      "type": "graph",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        {
+          "expr": "container_fs_usage_bytes{name=~\".*alentapp.*\"} / 1024 / 1024",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "description": "Uso de filesystem por contenedor en MB"
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}

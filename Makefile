@@ -134,7 +134,7 @@ prod: ## Construye y levanta entorno producción
 	@echo "🚀 Starting production services..."
 	docker compose -f docker-compose.prod.yml up -d
 	@echo ""
-	@echo "  🌐 Frontend: http://localhost:80"
+	@echo "  🌐 Frontend: http://localhost:8080"
 	@echo "  ⚙️  API:      http://localhost:3000"
 	@echo "  🐘 DB:       postgres://localhost:5432"
 	@echo ""

@@ -8,11 +8,19 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "declaration": true,
+    "rootDir": "..",
+    "baseUrl": ".",
     "paths": {
       "@alentapp/shared": ["../shared/index.ts"]
-    }
+    },
+    "ignoreDeprecations": "6.0"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.integration.test.ts",
+    "src/**/*.e2e.test.ts",
+    "src/**/*.spec.ts"
+  ]
 }

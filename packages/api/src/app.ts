@@ -84,7 +84,7 @@ export function buildApp() {
 
     // Métricas: OTel en producción (vía :9464/metrics), fastify-metrics en desarrollo
     if (process.env.NODE_ENV !== 'production') {
-        server.register(metrics, { endpoint: '/metrics' });
+        server.register(metrics as any, { endpoint: '/metrics' });
     }
 
     const memberRepo = new PostgresMemberRepository();
@@ -269,7 +269,7 @@ export function buildApp() {
 }
 
 // Solo iniciar el servidor si el script se ejecuta directamente (no cuando es importado por vitest)
-if (process.argv[1] && process.argv[1].endsWith('app.ts')) {
+if (process.argv[1] && (process.argv[1].endsWith('app.ts') || process.argv[1].endsWith('app.js'))) {
     const server = buildApp();
     const port = parseInt(process.env.PORT || '3000', 10);
 

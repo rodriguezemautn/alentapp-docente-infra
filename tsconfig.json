@@ -12,5 +12,16 @@
                 "../shared/index.ts"
             ]
         }
-    }
+    },
+    "exclude": [
+        "node_modules",
+        "packages/*/dist",
+        "packages/*/coverage",
+        "packages/*/e2e",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.integration.test.ts",
+        "**/*.e2e.test.ts",
+        "**/*.spec.ts"
+    ]
 }

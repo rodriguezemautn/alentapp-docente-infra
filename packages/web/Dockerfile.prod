@@ -10,7 +10,7 @@ COPY packages/web/package*.json ./packages/web/
 COPY packages/shared/package*.json ./packages/shared/
 
 # Install production dependencies only (para runtime final)
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # =============================================================================
 # Stage 2: Build (compilar frontend con Vite)
@@ -46,9 +46,22 @@ COPY --from=build /app/packages/web/dist /usr/share/nginx/html
 # Copy custom nginx configuration
 COPY packages/web/nginx.conf /etc/nginx/conf.d/default.conf
 
+# Remove entrypoint scripts that conflict with read-only fs
+RUN rm -rf /docker-entrypoint.d/
+
+# Replace nginx main config for read-only compatibility
+RUN cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak && \
+    cat /etc/nginx/nginx.conf.bak | \
+    sed 's#access_log /var/log/nginx/access.log#access_log /dev/stdout#' | \
+    sed 's#error_log /var/log/nginx/error.log#error_log /dev/stderr#' | \
+    sed 's#pid /run/nginx.pid#pid /tmp/nginx.pid;\nclient_body_temp_path /tmp/client_body;\nproxy_temp_path /tmp/proxy;\nfastcgi_temp_path /tmp/fastcgi;\nuwsgi_temp_path /tmp/uwsgi;\nscgi_temp_path /tmp/scgi;#' \
+    > /etc/nginx/nginx.conf && \
+    rm /etc/nginx/nginx.conf.bak
+
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
 
 EXPOSE 80
+ENTRYPOINT []
 CMD ["nginx", "-g", "daemon off;"]

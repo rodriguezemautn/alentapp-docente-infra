@@ -99,12 +99,12 @@ export function SportsView() {
         };
         const updated = await sportsService.update(dialog.editingItem.id, updateData);
         // Optimistic update
-        setData((sports || []).map((s) => (s.id === updated.id ? updated : s)));
+        setData((sports || []).map((s) => (s.id === updated.id ? updated as SportDetailDTO : s)));
         toaster.create({ title: "Deporte actualizado", type: "success" });
       } else {
         const created = await sportsService.create(formData as CreateSportRequest);
         // Optimistic update
-        setData([...(sports || []), created]);
+        setData([...(sports || []), created as SportDetailDTO]);
         toaster.create({ title: "Deporte creado", type: "success" });
       }
       dialog.close();

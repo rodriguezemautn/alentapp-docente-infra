@@ -1,0 +1,106 @@
+{
+  "title": "Alentapp UX — Frontend",
+  "uid": "alentapp-ux-dashboard",
+  "description": "Métricas de experiencia de usuario: rendimiento frontend y API percibida",
+  "tags": ["alentapp", "frontend", "ux", "web-vitals"],
+  "timezone": "America/Argentina/Buenos_Aires",
+  "panels": [
+    {
+      "title": "Latencia de API (experiencia del usuario)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, rate(http_request_duration_bucket[5m]))",
+          "legendFormat": "p50 (mediana)"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_bucket[5m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_bucket[5m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "description": "Latencia de API que percibe el usuario — p50, p95 y p99 en ms"
+    },
+    {
+      "title": "Tasa de error del lado del cliente",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(http_requests_errors_total[5m]) / rate(http_requests_total[5m]) * 100",
+          "legendFormat": "Error %"
+        }
+      ],
+      "description": "Porcentaje de errores — impacto directo en experiencia de usuario"
+    },
+    {
+      "title": "Simulación Core Web Vitals — LCP",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.75, rate(http_request_duration_bucket[5m]))",
+          "legendFormat": "LCP simulado (ms)"
+        }
+      ],
+      "description": "Largest Contentful Paint simulado — basado en latencia p75 de API. En producción se reemplaza con RUM real.",
+      "thresholds": "2500,4000"
+    },
+    {
+      "title": "Simulación Core Web Vitals — INP",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_bucket[5m]))",
+          "legendFormat": "INP simulado (ms)"
+        }
+      ],
+      "description": "Interaction to Next Paint simulado — basado en latencia p95 de API.",
+      "thresholds": "200,500"
+    },
+    {
+      "title": "Simulación Core Web Vitals — CLS",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 8 },
+      "targets": [
+        {
+          "expr": "clamp_max(http_requests_active / 10, 1)",
+          "legendFormat": "CLS simulado"
+        }
+      ],
+      "description": "Cumulative Layout Shift simulado (proxy). Requiere RUM real para medición precisa.",
+      "thresholds": "0.1,0.25"
+    },
+    {
+      "title": "Disponibilidad del servicio",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 14 },
+      "targets": [
+        {
+          "expr": "up{job=\"alentapp-api-otel\"}",
+          "legendFormat": "API"
+        }
+      ],
+      "description": "1 = servicio arriba, 0 = caído"
+    },
+    {
+      "title": "Endpoints más lentos (p99)",
+      "type": "table",
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 14 },
+      "targets": [
+        {
+          "expr": "topk(5, histogram_quantile(0.99, rate(http_request_duration_bucket[5m])))",
+          "legendFormat": "p99"
+        }
+      ],
+      "description": "Top 5 endpoints más lentos por latencia p99"
+    }
+  ],
+  "schemaVersion": 38,
+  "version": 1
+}

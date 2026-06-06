@@ -85,7 +85,7 @@ services:
       dockerfile: packages/web/Dockerfile.prod
     container_name: alentapp-web
     ports:
-      - '80:80'
+      - '8080:80'
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
     depends_on:
@@ -97,8 +97,9 @@ services:
       - no-new-privileges:true
     read_only: true
     tmpfs:
-      - /var/run
-      - /var/cache/nginx
+      - /tmp:size=10M
+      - /var/run:size=1M
+      - /var/cache/nginx:size=10M
     cap_drop:
       - ALL
     cap_add:

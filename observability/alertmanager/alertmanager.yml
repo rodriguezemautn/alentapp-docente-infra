@@ -1,0 +1,33 @@
+# Alertmanager — Alentapp Docente
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default'
+
+receivers:
+  - name: 'default'
+    slack_configs:
+      - send_resolved: true
+        # Opcional: configurar webhook de Slack
+        # api_url: 'https://hooks.slack.com/services/...'
+        channel: '#alertas-alentapp'
+        title: '{{ .GroupLabels.alertname }}'
+        text: >-
+          {{ range .Alerts }}
+            • {{ .Annotations.description }}
+            Severidad: {{ .Labels.severity }}
+          {{ end }}
+    email_configs:
+      - send_resolved: true
+        # Opcional: configurar SMTP
+        # to: 'admin@alentapp.com'
+        # from: 'alertmanager@alentapp.com'
+        # smarthost: 'smtp.example.com:587'
+        # auth_username: 'user'
+        # auth_password: 'pass'
+
+# Configuración global (se puede sobreescribir por receiver)
+global:
+  resolve_timeout: 5m
