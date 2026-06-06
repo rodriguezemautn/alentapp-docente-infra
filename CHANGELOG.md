@@ -1,4 +1,16 @@
 
+## [1.2.0] — 2026-06-06
+
+### Added
+
+- **SDD:** Specs, design y tasks para Actividad 4 Version Pro (openspec/)
+- **Observabilidad:** 5 dominios de specs: docker-production, otel-telemetry, observability-dashboards, alerting, actividad-enunciado
+- **Observabilidad:** Diseño de arquitectura 4-capas: OTel → Prometheus → Grafana, con 4 dashboards (RED/USE/Business/UX)
+
+### Changed
+
+- **Actividad 4:** Inicio de reescritura V2 — corrige inconsistencia métricas custom vs auto-instrumentación, agrega USE, negocio, frontend y alertas
+
 ## [1.1.0] — 2026-06-06
 
 ### Added
