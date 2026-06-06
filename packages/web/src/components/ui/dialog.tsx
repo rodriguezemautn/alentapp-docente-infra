@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Dialog as ChakraDialog, Portal } from "@chakra-ui/react"
 import * as React from "react"
 

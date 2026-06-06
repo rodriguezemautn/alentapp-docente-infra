@@ -18,7 +18,8 @@ import { LuPlus, LuPencil, LuTrash2, LuRefreshCw } from "react-icons/lu";
 import { useState, useMemo } from "react";
 import { disciplinesService } from "../services/disciplines";
 import { sportsService } from "../services/sports";
-import type { DisciplineDetailDTO, CreateDisciplineRequest, UpdateDisciplineRequest, SportDTO } from "@alentapp/shared";
+import { getErrorMessage } from "../lib/error-utils";
+import type { DisciplineDetailDTO, CreateDisciplineRequest } from "@alentapp/shared";
 import {
   DialogRoot,
   DialogContent,
@@ -138,8 +139,8 @@ export function DisciplinesView() {
         toaster.create({ title: "Disciplina creada", type: "success" });
       }
       dialog.close();
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al guardar la disciplina", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     } finally {
       dialog.setSubmitting(false);
     }
@@ -151,8 +152,8 @@ export function DisciplinesView() {
       await disciplinesService.delete(id);
       setData((disciplines || []).filter((d) => d.id !== id));
       toaster.create({ title: "Disciplina eliminada", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al eliminar la disciplina", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     }
   };
 

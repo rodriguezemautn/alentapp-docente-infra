@@ -26,18 +26,6 @@ type DBDisciplineWithSport = {
     };
 };
 
-type DBDiscipline = {
-    id: string;
-    sportId: string;
-    name: string;
-    description: string | null;
-    startDate: Date;
-    endDate: Date;
-    schedule: string | null;
-    professor: string | null;
-    created_at: Date;
-};
-
 export class PostgresDisciplineRepository implements DisciplineRepository {
     async create(data: CreateDisciplineRequest): Promise<DisciplineDetailDTO> {
         const discipline = await prisma.discipline.create({

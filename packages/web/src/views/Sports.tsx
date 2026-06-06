@@ -29,6 +29,7 @@ import {
   DialogCloseTrigger,
 } from "../components/ui/dialog";
 import { Field } from "../components/ui/field";
+import { getErrorMessage } from "../lib/error-utils";
 import { toaster } from "../components/ui/toaster";
 import { useApi } from "../hooks/useApi";
 import { useDialog } from "../hooks/useDialog";
@@ -107,9 +108,9 @@ export function SportsView() {
         toaster.create({ title: "Deporte creado", type: "success" });
       }
       dialog.close();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toaster.create({
-        title: err.message || "Error al guardar el deporte",
+        title: getErrorMessage(err),
         type: "error",
       });
     } finally {
@@ -128,9 +129,9 @@ export function SportsView() {
       // Optimistic update
       setData((sports || []).filter((s) => s.id !== id));
       toaster.create({ title: "Deporte eliminado", type: "success" });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toaster.create({
-        title: err.message || "Error al eliminar el deporte",
+        title: getErrorMessage(err),
         type: "error",
       });
     }

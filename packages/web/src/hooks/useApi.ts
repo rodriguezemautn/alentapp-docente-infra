@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { getErrorMessage } from "../lib/error-utils";
 
 interface UseApiState<T> {
   data: T | null;
@@ -32,13 +33,14 @@ export function useApi<T>(fetcher: () => Promise<T>): UseApiReturn<T> {
     try {
       const data = await fetcher();
       setState({ data, isLoading: false, error: null });
-    } catch (err: any) {
-      setState({ data: null, isLoading: false, error: err.message || "Error desconocido" });
+    } catch (err: unknown) {
+      setState({ data: null, isLoading: false, error: getErrorMessage(err) });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
   }, [refresh]);
 

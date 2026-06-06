@@ -20,7 +20,7 @@ function withErrorBoundary(Component: React.ComponentType) {
   );
 }
 
-export let router = createBrowserRouter([
+export const router = createBrowserRouter([
   {
     Component: Layout,
     children: [

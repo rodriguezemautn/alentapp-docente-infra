@@ -117,7 +117,7 @@ vi.mock('../infrastructure/PostgresMemberRepository.js', () => {
             async findAll() { return Object.values(membersStore); }
             async create(data: any) { return data; }
             async update(id: string, data: any) { return data; }
-            async delete(id: string) { }
+            async delete(_id: string) { }
         }
     };
 });

@@ -2,7 +2,6 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { CreateMedicalCertificateUseCase } from '../application/CreateMedicalCertificateUseCase.js';
 import { GetActiveMedicalCertificateUseCase } from '../application/GetActiveMedicalCertificateUseCase.js';
 import { CreateMedicalCertificateRequest } from '@alentapp/shared';
-import { ValidationError, NotFoundError } from '../domain/errors.js';
 
 export class MedicalCertificateController {
     constructor(

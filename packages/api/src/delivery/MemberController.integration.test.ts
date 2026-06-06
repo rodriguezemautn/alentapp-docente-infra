@@ -13,7 +13,7 @@ vi.mock('../infrastructure/PostgresMemberRepository.js', () => {
             async findByDni(dni: string) { return dni === '12345678' ? { id: '1', dni: '12345678' } : null; }
             async create(data: any) { return { id: '2', ...data, category: data.category || 'Pleno', status: 'Activo' }; }
             async update(id: string, data: any) { return { id, ...data }; }
-            async delete(id: string) { return; }
+            async delete(_id: string) { return; }
         }
     };
 });

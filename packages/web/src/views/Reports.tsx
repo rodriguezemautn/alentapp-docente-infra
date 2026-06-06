@@ -4,6 +4,7 @@ import { Button } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { reportsService } from "../services/reports";
 import type { MemberReportResponse, LockerReportResponse, MaterialReportResponse } from "@alentapp/shared";
+import { getErrorMessage } from "../lib/error-utils";
 
 export function ReportsView() {
   const [memberReport, setMemberReport] = useState<MemberReportResponse | null>(null);
@@ -24,14 +25,18 @@ export function ReportsView() {
       setMemberReport(members);
       setLockerReport(lockers);
       setMaterialReport(materials);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => { fetchReports(); }, []);
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    fetchReports();
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   return (
     <Stack gap="8">

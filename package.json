@@ -30,11 +30,10 @@
   ],
   "lint-staged": {
     "packages/web/src/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write --ignore-unknown 2>/dev/null || true"
+      "eslint --fix --config packages/web/eslint.config.js"
     ],
     "packages/api/src/**/*.ts": [
-      "prettier --write --ignore-unknown 2>/dev/null || true"
+      "eslint --fix --config packages/api/eslint.config.js"
     ],
     "packages/shared/src/**/*.ts": [
       "prettier --write --ignore-unknown 2>/dev/null || true"

@@ -31,7 +31,7 @@ import { Field } from "../components/ui/field";
 import { toaster } from "../components/ui/toaster";
 import { useApi } from "../hooks/useApi";
 import { useDialog } from "../hooks/useDialog";
-import { membersService } from "../services/members";
+import { getErrorMessage } from "../lib/error-utils";
 
 const statusColorMap: Record<string, string> = {
   Active: "yellow",
@@ -80,8 +80,8 @@ export function EquipmentLoansView() {
       setData([...(loans || []), { ...created } as EquipmentLoanDetailDTO]);
       toaster.create({ title: "Préstamo registrado", type: "success" });
       dialog.close();
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al registrar préstamo", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     } finally {
       dialog.setSubmitting(false);
     }
@@ -92,8 +92,8 @@ export function EquipmentLoansView() {
       const updated = await equipmentLoansService.returnLoan(id, {});
       setData((loans || []).map((l) => (l.id === updated.id ? { ...l, ...updated } : l)));
       toaster.create({ title: "Devolución registrada", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al devolver", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     }
   };
 
@@ -105,8 +105,8 @@ export function EquipmentLoansView() {
       const updated = await equipmentLoansService.reportLost(id);
       setData((loans || []).map((l) => (l.id === updated.id ? { ...l, ...updated } : l)));
       toaster.create({ title: "Pérdida reportada", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al reportar pérdida", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     }
   };
 
@@ -120,8 +120,8 @@ export function EquipmentLoansView() {
       await equipmentLoansService.delete(id);
       setData((loans || []).filter((l) => l.id !== id));
       toaster.create({ title: "Préstamo eliminado", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al eliminar", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     }
   };
 

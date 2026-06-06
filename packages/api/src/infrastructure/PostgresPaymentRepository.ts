@@ -161,17 +161,6 @@ export class PostgresPaymentRepository implements PaymentRepository {
             }
         }
 
-        // Obtener conteo de cancelados en el período
-        const canceledCount = await prisma.payment.count({
-            where: {
-                status: 'Canceled',
-                paymentDate: {
-                    gte: new Date(from),
-                    lte: new Date(to),
-                },
-            },
-        });
-
         return {
             from,
             to,

@@ -40,6 +40,7 @@ import {
   SelectItem,
   createListCollection,
 } from "../components/ui/select";
+import { getErrorMessage } from "../lib/error-utils";
 import { toaster } from "../components/ui/toaster";
 
 export function MedicalCertificatesView() {
@@ -76,6 +77,7 @@ export function MedicalCertificatesView() {
 
   // Fetch active certificate when selected member changes
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!selectedMemberId) {
       setCertificate(null);
       setError(null);
@@ -87,14 +89,15 @@ export function MedicalCertificatesView() {
       try {
         const result = await medicalCertificatesService.getActive(selectedMemberId);
         setCertificate(result);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setCertificate(null);
-        setError(err.message || "Error al cargar el certificado");
+        setError(getErrorMessage(err));
       } finally {
         setIsLoading(false);
       }
     };
     fetchActive();
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [selectedMemberId]);
 
   const openCreateModal = () => {
@@ -125,8 +128,8 @@ export function MedicalCertificatesView() {
       const result = await medicalCertificatesService.getActive(selectedMemberId);
       setCertificate(result);
       toaster.create({ title: "Certificado creado", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al crear el certificado", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     } finally {
       setIsSubmitting(false);
     }

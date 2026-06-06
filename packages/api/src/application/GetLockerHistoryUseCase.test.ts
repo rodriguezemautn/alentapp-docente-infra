@@ -22,7 +22,7 @@ describe('GetLockerHistoryUseCase', () => {
 
     it('debe retornar historial por memberId', async () => {
         vi.mocked(mockLogRepo.findByMember).mockResolvedValue([]);
-        const result = await useCase.execute({ memberId: 'm1' });
+        await useCase.execute({ memberId: 'm1' });
         expect(mockLogRepo.findByMember).toHaveBeenCalledWith('m1');
     });
 

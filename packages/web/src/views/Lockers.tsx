@@ -35,6 +35,7 @@ import {
   SelectItem,
 } from "../components/ui/select";
 import { Field } from "../components/ui/field";
+import { getErrorMessage } from "../lib/error-utils";
 import { toaster } from "../components/ui/toaster";
 import { useApi } from "../hooks/useApi";
 import { useDialog } from "../hooks/useDialog";
@@ -109,9 +110,9 @@ export function LockersView() {
         toaster.create({ title: "Casillero creado", type: "success" });
       }
       dialog.close();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toaster.create({
-        title: err.message || "Error al guardar el casillero",
+        title: getErrorMessage(err),
         type: "error",
       });
     } finally {
@@ -129,9 +130,9 @@ export function LockersView() {
       await lockersService.delete(id);
       setData((lockers || []).filter((l) => l.id !== id));
       toaster.create({ title: "Casillero eliminado", type: "success" });
-    } catch (err: any) {
+    } catch (err: unknown) {
       toaster.create({
-        title: err.message || "Error al eliminar el casillero",
+        title: getErrorMessage(err),
         type: "error",
       });
     }
@@ -145,7 +146,7 @@ export function LockersView() {
       try {
         const filtered = await lockersService.getAll(value);
         setData(filtered);
-      } catch (err: any) {
+      } catch {
         toaster.create({ title: "Error al filtrar", type: "error" });
       }
     }

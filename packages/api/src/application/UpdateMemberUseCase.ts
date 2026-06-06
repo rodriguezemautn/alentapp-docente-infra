@@ -26,7 +26,7 @@ export class UpdateMemberUseCase {
         }
 
         // Forzar categoría Cadete si es menor
-        let finalData = { ...data };
+        const finalData = { ...data };
         const birthdateStr = data.birthdate || existingMember.birthdate;
         if (birthdateStr) {
             if (this.memberValidator.isMinor(birthdateStr)) {

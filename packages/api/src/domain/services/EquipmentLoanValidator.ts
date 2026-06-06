@@ -1,4 +1,4 @@
-import type { MemberDTO, SportCategory } from '@alentapp/shared';
+import type { MemberDTO } from '@alentapp/shared';
 
 export class EquipmentLoanValidator {
     validateMemberSportCategory(member: MemberDTO): void {

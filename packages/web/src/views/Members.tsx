@@ -35,6 +35,7 @@ import {
   SelectContent,
   SelectItem,
 } from "../components/ui/select";
+import { getErrorMessage } from "../lib/error-utils";
 import { toaster } from "../components/ui/toaster";
 import { useApi } from "../hooks/useApi";
 import { useDialog } from "../hooks/useDialog";
@@ -84,8 +85,8 @@ export function MembersView() {
         toaster.create({ title: "Miembro creado", type: "success" });
       }
       dialog.close();
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al guardar el miembro", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     } finally {
       dialog.setSubmitting(false);
     }
@@ -97,8 +98,8 @@ export function MembersView() {
       await membersService.delete(id);
       setData((members || []).filter((m) => m.id !== id));
       toaster.create({ title: "Miembro eliminado", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al eliminar el miembro", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     }
   };
 

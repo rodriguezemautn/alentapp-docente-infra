@@ -1,5 +1,4 @@
-import type { DisciplineDTO, DisciplineDetailDTO, CreateDisciplineRequest, UpdateDisciplineRequest } from '@alentapp/shared';
-import type { SportDTO } from '@alentapp/shared';
+import type { DisciplineDetailDTO, CreateDisciplineRequest, UpdateDisciplineRequest } from '@alentapp/shared';
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api/v1';
 

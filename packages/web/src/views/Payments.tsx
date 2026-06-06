@@ -44,6 +44,7 @@ import {
   SelectItem,
   createListCollection,
 } from "../components/ui/select";
+import { getErrorMessage } from "../lib/error-utils";
 import { toaster } from "../components/ui/toaster";
 import { PAYMENT_TYPES, PAYMENT_TYPES_FILTER, PAYMENT_STATUSES_FILTER } from "../constants";
 
@@ -122,8 +123,8 @@ export function PaymentsView() {
       const result = await paymentsService.getAll(filters);
       setPayments(result.data);
       setTotal(result.total);
-    } catch (err: any) {
-      setError(err.message || "Error al cargar los pagos");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -137,8 +138,11 @@ export function PaymentsView() {
   };
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     fetchMembers();
     fetchPayments();
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleApplyFilters = () => {
@@ -187,8 +191,8 @@ export function PaymentsView() {
       setTotal((t) => t + 1);
       setIsDialogOpen(false);
       toaster.create({ title: "Pago creado", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al crear el pago", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -203,8 +207,8 @@ export function PaymentsView() {
         prev.map((p) => (p.id === id ? { ...p, status: "Canceled" as PaymentStatus } : p))
       );
       toaster.create({ title: "Pago cancelado", type: "success" });
-    } catch (err: any) {
-      toaster.create({ title: err.message || "Error al cancelar el pago", type: "error" });
+    } catch (err: unknown) {
+      toaster.create({ title: getErrorMessage(err), type: "error" });
     }
   };
 
