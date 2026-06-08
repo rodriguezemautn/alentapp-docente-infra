@@ -1,5 +1,6 @@
 // PRIMERO: inicializar OpenTelemetry (antes de cualquier otro import)
 import './infrastructure/telemetry.js';
+import { redMetrics, processMetrics, businessMetrics, updateProcessMetrics } from './infrastructure/telemetry.js';
 
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
@@ -262,8 +263,88 @@ export function buildApp() {
     server.get('/api/v1/reportes/socios', reportController.getMemberReport.bind(reportController));
 
     server.get('/', async (req, rep) => {
-        rep.status(200).send({ msg: 'asd' })
+        rep.status(200).send({ msg: 'ok' })
     });
+
+    // ──────────────────────────────────────────────
+    // OTel métricas personalizadas
+    // ──────────────────────────────────────────────
+    let activeRequestCount = 0;
+
+    server.addHook('onRequest', async (_req) => {
+        activeRequestCount++;
+        processMetrics.activeRequests.record(activeRequestCount);
+    });
+
+    server.addHook('onResponse', async (req, rep) => {
+        const elapsed = rep.elapsedTime; // ms
+        const statusCode = rep.statusCode;
+
+        // Contar requests
+        redMetrics.requestCounter.add(1, {
+            method: req.method,
+            path: req.routeOptions?.url || req.url,
+            status: String(statusCode),
+        });
+
+        // Contar errores (4xx/5xx)
+        if (statusCode >= 400) {
+            redMetrics.errorCounter.add(1, {
+                method: req.method,
+                path: req.routeOptions?.url || req.url,
+                status: String(statusCode),
+            });
+        }
+
+        // Duración
+        redMetrics.requestDuration.record(elapsed, {
+            method: req.method,
+            path: req.routeOptions?.url || req.url,
+            status: String(statusCode),
+        });
+
+        // Requests activos
+        activeRequestCount--;
+        processMetrics.activeRequests.record(Math.max(activeRequestCount, 0));
+
+        // Memoria
+        updateProcessMetrics();
+    });
+
+    // Actualizar métricas de negocio cada 30 segundos
+    if (process.argv[1] && (process.argv[1].endsWith('app.ts') || process.argv[1].endsWith('app.js'))) {
+        void setInterval(async () => {
+            try {
+                const { PrismaClient } = await import('./generated/client/client.js');
+                const { PrismaPg } = await import('@prisma/adapter-pg');
+                const adapter = new PrismaPg(process.env.DATABASE_URL!);
+                const prisma = new PrismaClient({ adapter });
+
+                const [memberCount, loanCount, lockerCount, lockerOccupied, todayRevenue] = await Promise.all([
+                    prisma.member.count({ where: { status: 'Activo' } }),
+                    prisma.equipmentLoan.count({ where: { status: 'Active' } }),
+                    prisma.locker.count(),
+                    prisma.locker.count({ where: { status: 'Occupied' } }),
+                    prisma.payment.aggregate({
+                        _sum: { amount: true },
+                        where: {
+                            paymentDate: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+                            status: { not: 'Canceled' },
+                        },
+                    }),
+                ]);
+
+                businessMetrics.activeMembers.record(memberCount);
+                businessMetrics.activeLoans.record(loanCount);
+                businessMetrics.lockerOccupancy.record(lockerCount > 0 ? (lockerOccupied / lockerCount) * 100 : 0);
+                businessMetrics.dailyRevenue.add(Number(todayRevenue._sum.amount) || 0);
+
+                await prisma.$disconnect();
+            } catch (err: any) {
+                server.log.warn({ err: err.message }, 'Error actualizando métricas de negocio');
+            }
+        }, 30_000);
+    }
 
     return server;
 }
