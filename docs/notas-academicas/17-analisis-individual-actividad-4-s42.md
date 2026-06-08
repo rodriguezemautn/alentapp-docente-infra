@@ -1,6 +1,6 @@
 # Análisis Individual — Actividad 4 · Comisión S42 (Mañana)
 
-**Fecha**: 08/06/2026
+**Fecha**: 08/06/2026 · Actualizado: 09/06/2026 (resultados coloquio)
 **Grupos**: 7 · **Alumnos**: 31 · **Forks con Act4**: 7/7 (100%)
 
 ---
@@ -181,7 +181,7 @@
 | CORTES Matias | MatiasCortes2211 | 161 | 23.8% | ✅ Alta | 🟢 Alto | Líder técnico |
 | SCHNEEBERGER Angeles | angeles131 | 152 | 22.5% | ✅ Alta | 🟢 Alto | Muy activa |
 | CASTAÑO Rodrigo | rodricastanio | 131 | 19.4% | ✅ Alta | 🟢 Alto | Activo |
-| CEMINO Conrado | Conraaa | 67 | 9.9% | ✅ Media | 🟡 Medio | Menos commits, pero de calidad |
+| CEMINO Conrado | Conraaa | 67 | 9.9% | ✅ Media (APROBADO) | 🟢 Alto | Coloquio: demostró conocimiento del dominio y participación activa en diseño e implementación |
 
 ### Indicadores del Grupo
 
@@ -193,13 +193,14 @@
 | **Pull Requests** | ✅ Merges con PR (#99) |
 | **Act4 entregada** | 08/06 |
 | **Fortaleza** | Grupo más activo en commits (677), excelente distribución |
-| **Debilidad** | Conrado con menor % (9.9%) — verificar en coloquio |
+| **Debilidad** | Angeles con baja performance en coloquio; Cortés inasistente |
 
 ### Observaciones
 - **Grupo con más commits de S42** (677) y de los más balanceados
 - Documentaron decisiones técnicas (healthcheck, separación compose)
-- Angeles Schneeberger con 152 commits — muy activa
-- Conrado Cemino con 67 commits (9.9%) — el de menor participación del grupo, pero aún significativo
+- Angeles Schneeberger con 152 commits — muy activa en código, pero **baja performance en coloquio** (suma en alertas)
+- Matias Cortés con 161 commits — **inasistente al coloquio** (suma en alertas)
+- Conrado Cemino con 67 commits (9.9%) — **APROBADO**: demostró conocimiento del dominio y participación activa en diseño e implementación durante el coloquio
 
 ---
 
@@ -229,13 +230,14 @@
 | **Pull Requests** | ✅ Merges con PR numerados |
 | **Act4 entregada** | 07/06 |
 | **Fortaleza** | PRs numerados, comandos de reproducción, debugging real |
-| **Debilidad** | Abel con menor participación (8.6%) |
+| **Debilidad** | Abel con menor participación (8.6%); Llontop con bajo conocimiento del dominio en coloquio |
 
 ### Observaciones
 - **Mejor organización de PRs**: branches numerados (#151 a #156)
 - Comandos de reproducción documentados en GitHub — excelente práctica
 - Debugging real: alineación de queries PromQL con métricas custom
 - Abel Di Bella con 8.6% — verificar en coloquio
+- **LLONTOP Hebert**: suma en alertas — poco conocimiento del dominio y baja defensa en el coloquio
 
 ---
 
@@ -272,6 +274,7 @@
 - Feature branches para observabilidad y Grafana
 - Bug fix en paneles de Grafana (FASE-3) — debugging real
 - Cesar Huari con 14% — verificar participación
+- **Francina Ruaro**: suma en alertas — **inasistente al coloquio**
 
 ---
 
@@ -279,18 +282,18 @@
 
 ### Ranking de Engagement por Alumno
 
-| Alumno | Grupo | Commits | % Grupo | Engagement |
-|--------|-------|:-------:|:-------:|:----------:|
-| CORTES Matias | 5 | 161 | 23.8% | 🟢 Alto |
-| ZACARIAS Paula | 5 | 166 | 24.5% | 🟢 Alto |
-| SCHNEEBERGER Angeles | 5 | 152 | 22.5% | 🟢 Alto |
-| PERTILE Valentina | 4 | 167 | 43.9% | 🟢 Alto |
-| DIEZ Nicolas | 3 | 165 | 39.6% | 🟢 Alto |
-| LAFALCE Mateo | 6 | 126 | 34.9% | 🟢 Alto |
-| TASSI Marcelo | 6 | 110 | 30.5% | 🟢 Alto |
-| MANRIQUE Agustin | 2 | 61 | 28.9% | 🟢 Alto |
-| AMADO Lautaro | 1 | 102 | 25.6% | 🟢 Alto |
-| PIERRARD Facundo | 7 | 38 | 24.8% | 🟢 Alto |
+| Alumno | Grupo | Commits | % Grupo | Engagement | Coloquio |
+|--------|-------|:-------:|:-------:|:----------:|:---------|
+| ZACARIAS Paula | 5 | 166 | 24.5% | 🟢 Alto | ✅ |
+| CORTES Matias | 5 | 161 | 23.8% | 🟢 Alto | ❌ Inasistencia |
+| SCHNEEBERGER Angeles | 5 | 152 | 22.5% | 🟢 Alto | ⚠️ Baja performance |
+| PERTILE Valentina | 4 | 167 | 43.9% | 🟢 Alto | ✅ |
+| DIEZ Nicolas | 3 | 165 | 39.6% | 🟢 Alto | ✅ |
+| LAFALCE Mateo | 6 | 126 | 34.9% | 🟢 Alto | ✅ |
+| TASSI Marcelo | 6 | 110 | 30.5% | 🟢 Alto | ✅ |
+| MANRIQUE Agustin | 2 | 61 | 28.9% | 🟢 Alto | ✅ |
+| AMADO Lautaro | 1 | 102 | 25.6% | 🟢 Alto | ✅ |
+| PIERRARD Facundo | 7 | 38 | 24.8% | 🟢 Alto | ✅ |
 
 ### Alumnos con Engagement Bajo (requieren atención)
 
@@ -298,7 +301,6 @@
 |--------|-------|:-------:|:-------:|-------------|
 | ANDRADA Santiago | 3 | 11 | 2.6% | 🔴 Muy baja participación |
 | DI BELLA Abel | 6 | 31 | 8.6% | 🟡 Baja, pero significativa |
-| CEMINO Conrado | 5 | 67 | 9.9% | 🟡 Límite, verificar |
 | HUARI Cesar | 7 | 21 | 13.7% | 🟡 Baja pero activo en PRs |
 
 ### Estadísticas por Grupo
@@ -313,11 +315,15 @@
 | 6. Lafalce | 361 | 🟡 Sesgada | ✅ Sí | ✅ Excelente | ✅ |
 | 7. Ruaro | 153 | 🟡 Sesgada | ✅ Sí | ✅ Sí | ✅ |
 
-### Alertas para Coloquio S42
+### Alertas para Coloquio S42 — Resultados
 
-| Alumno | Alerta | Acción sugerida |
-|--------|--------|-----------------|
-| ANDRADA Santiago | 2.6% de commits | Preguntar qué hizo y por qué tan poca actividad |
-| DI BELLA Abel | 8.6% de commits | Verificar si trabajó en rama no mergeada |
-| CEMINO Conrado | 9.9% de commits | Preguntar sobre su aporte específico (documentó separación compose) |
-| HUARI Cesar | 13.7% de commits | Verificar participación en implementación técnica |
+| Alumno | Alerta | Resultado del Coloquio |
+|--------|--------|----------------------|
+| ANDRADA Santiago | 2.6% de commits | ⏳ Pendiente de coloquio |
+| DI BELLA Abel | 8.6% de commits | ⏳ Pendiente de coloquio |
+| HUARI Cesar | 13.7% de commits | ⏳ Pendiente de coloquio |
+| **CEMINO Conrado** | ~~9.9% — Límite~~ | ✅ **APROBADO** — Demostró conocimiento del dominio y participación activa en diseño e implementación |
+| **LLONTOP Hebert** | 13.3% — Bajo conocimiento del dominio | ⚠️ **Alerta** — Poca defensa en coloquio, conocimiento del dominio insuficiente |
+| **SCHNEEBERGER Angeles** | 22.5% — Buena en commits, baja en coloquio | ⚠️ **Alerta** — Baja performance en el coloquio |
+| **CORTES Matias** | 23.8% — Inasistencia | ❌ **Inasistente** al coloquio |
+| **RUARO Francina** | 17.0% — Inasistencia | ❌ **Inasistente** al coloquio |
