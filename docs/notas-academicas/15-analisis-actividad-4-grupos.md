@@ -403,7 +403,7 @@
 
 ### S42 — Mañana
 
-#### 1. Grupo Amado Lautaro → Lauti-Amado/alentapp
+#### 2. Grupo Amado Lautaro → Lauti-Amado/alentapp
 **Miembros**: AMADO Lautaro, FIGUEIRA Julian, LA GIOIOSA Bernardita, TUNDIS Yamil, BUCCHINO Ulises
 **Contributors**: Lauti-Amado, yamiltundis, JulianFigueira, ulisesutnfrlp7, bernilagio, berni-lagio
 **Act4**: ✅ Completa
@@ -426,9 +426,11 @@
 3. *(Bernardita L.)* En el documento de diseño, ¿qué decisiones de instrumentación documentaron? ¿Por qué usaron hook global vs decorators?
 4. *(Ulises B.)* La verificación técnica, ¿incluye pruebas de seguridad como read-only filesystem, capabilities, healthchecks?
 
+PPT 
+
 ---
 
-#### 2. Grupo Matias Dieguez → naimguar/alentapp
+#### 6. Grupo Matias Dieguez → naimguar/alentapp
 **Miembros**: DIEGUEZ Matias, GUARINO Naim, BENITEZ Ignacio, MANRIQUE Agustin
 **Contributors**: AgustinManrique, DieguezMatias, naimguar, Ignacio-dev0
 **Act4**: ✅ Completa. Muy completo.
@@ -447,15 +449,17 @@
 - IGNACIO BENITEZ ("Ignacio-dev0") trabajó en optimización de imagen y OTel
 - Correcciones de nginx capabilities — mismo problema que tuvimos en nuestro reference (SETUID/SETGID)
 
+
 **Preguntas para coloquio**:
 1. *(Agustin M.)* Mencionan correcciones de nginx capabilities — ¿Qué capabilities específicas necesitó nginx y por qué? (SETUID, SETGID, CHOWN?)
 2. *(Matias D.)* En el multi-stage, ¿cómo separaron las etapas de build y runtime? ¿Qué optimizaciones de capas aplicaron?
 3. *(Ignacio B.)* En la optimización de tamaño de imagen API, ¿qué técnicas usaron? ¿Lograron medir la reducción?
 4. *(Naim G.)* El RED dashboard provisionado, ¿qué paneles incluye? ¿Usaron variables de Grafana o queries fijas?
 
+Buenas deciciones de diseño. falto trabajo sobre el panel. De modo que mostrara datos para observabilidad de terceros. 
 ---
 
-#### 3. Grupo Franco Arce → nicodiezz/alentapp
+#### 4. Grupo Franco Arce → nicodiezz/alentapp
 **Miembros**: ARCE Franco, BARBE LORENZO Dante, ANDRADA Santiago, DIEZ Nicolas, GIL Ramiro
 **Contributors**: nicodiezz, DanteBarbe, FrancoArcee, ramirogil4, andradasantiago1
 **Act4**: ✅ Completa
@@ -480,7 +484,7 @@
 
 ---
 
-#### 4. Grupo Valentina Pertile → ValentinaPertile/alentapp
+#### 5. Grupo Valentina Pertile → ValentinaPertile/alentapp
 **Miembros**: PERTILE Valentina, SUAREZ Maria Luana, ROMERO Macarena
 **Contributors**: ValentinaPertile, Luana-suarez, Macarena-1973
 **Act4**: ✅ Completa
@@ -504,7 +508,7 @@
 
 ---
 
-#### 5. Grupo Paula Zacarias → MatiasCortes2211/alentapp
+#### 1. Grupo Paula Zacarias → MatiasCortes2211/alentapp
 **Miembros**: ZACARIAS Paula, CEMINO Conrado, CASTAÑO Rodrigo, SCHNEEBERGER Angeles, CORTES Matias
 **Contributors**: paulazf, MatiasCortes2211, angeles131, rodricastanio, Conraaa
 **Act4**: ✅ Completa
@@ -526,9 +530,11 @@
 3. *(Rodrigo C.)* ¿Implementaron OpenTelemetry o usaron fastify-metrics? ¿Qué métricas recolectan?
 4. *(Paula Z.)* ¿Cómo verificaron que los comandos de verificación documentados realmente funcionen? ¿Los probaron end-to-end?
 
+Matias Cortez: Ausente por enfermedad.
+
 ---
 
-#### 6. Grupo Mateo Lafalce → TassiMarcelo/alentapp
+#### 3. Grupo Mateo Lafalce → TassiMarcelo/alentapp
 **Miembros**: LAFALCE Mateo, TASSI Marcelo, DELOZANO Matias, DI BELLA Abel, LLONTOP Hebert
 **Contributors**: mateolafalce, TassiMarcelo, AleLlontop, MatiDelozano, abelrdb
 **Act4**: ✅ Completa. Muy completa.
@@ -552,6 +558,7 @@
 2. *(Marcelo T.)* Alinearon las queries del dashboard RED con métricas custom — ¿Qué métricas custom implementaron? ¿Dots o underscores en los nombres?
 3. *(Abel D.)* Configuraste Prometheus para scrape de OpenTelemetry — ¿Qué targets configuraste? ¿Usaste host.docker.internal o nombres de servicio Docker?
 4. *(Matias D.)* En el PR de Prometheus+Grafana provisionados, ¿cómo integraron ambos servicios? ¿En el mismo compose o separados?
+5. *(Hebert LL.)* OTLP collector. 
 
 ---
 
@@ -559,6 +566,7 @@
 **Miembros**: RUARO Francina, PIERRARD Facundo, ARDENGHI Ernesto, HUARI Cesar
 **Contributors**: blauerwolf, PierrardFacundo, francianuro, CesarAntoniohuari
 **Act4**: ✅ Completa
+RUARO Francina Ausente por problemas familiares.
 
 **Logros**:
 - Grafana dashboard provisioning
