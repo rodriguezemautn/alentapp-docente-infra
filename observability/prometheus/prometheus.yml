@@ -11,7 +11,7 @@ scrape_configs:
   # Métricas OpenTelemetry de la API (vía OTel PrometheusExporter)
   - job_name: 'alentapp-api-otel'
     static_configs:
-      - targets: ['host.docker.internal:9464']
+      - targets: ['alentapp-api:9464']
         labels:
           app: 'alentapp'
           service: 'api'
@@ -20,7 +20,7 @@ scrape_configs:
   # Métricas fastify-metrics (solo dev — en prod se usa OTel en :9464)
   - job_name: 'alentapp-api-fastify'
     static_configs:
-      - targets: ['host.docker.internal:3000']
+      - targets: ['alentapp-api:3000']
         labels:
           app: 'alentapp'
           service: 'api'
@@ -30,7 +30,7 @@ scrape_configs:
   # cAdvisor — métricas de contenedores (CPU, memoria, disco, red)
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['alentapp-cadvisor:8080']
         labels:
           app: 'alentapp'
           service: 'infra'
@@ -38,7 +38,7 @@ scrape_configs:
   # node_exporter — métricas del host
   - job_name: 'node-exporter'
     static_configs:
-      - targets: ['host.docker.internal:9100']
+      - targets: ['alentapp-node-exporter:9100']
         labels:
           app: 'alentapp'
           service: 'infra'
