@@ -1,28 +1,42 @@
 # Análisis de Infraestructura Docker — Alentapp Docente
 
-**Versión**: v1.0.0  
-**Fecha**: 25/05/2026  
-**Analista**: Emanuel Rodriguez  
+**Versión**: v2.0.0  
+**Fecha**: 08/06/2026  
+**Analista**: Emanuel Rodriguez
+
+> ⚠️ Este documento se actualizó tras la implementación de la Actividad 4 Version Pro.  
+> Las vulnerabilidades identificadas en v1.0.0 fueron corregidas.
 
 ---
 
 ## 1. Estado Actual
 
-### 1.1. Servicios
+### 1.1. Servicios — Desarrollo
 
 | Servicio | Imagen Base | Puerto | Modo | Dockerfile |
 |----------|------------|--------|------|------------|
 | `db` | `postgres:16-alpine` | 5432 | Producción | — |
-| `api` | `node:20-alpine` | 3000 | Desarrollo (`tsx watch`) | `packages/api/Dockerfile` |
-| `web` | `node:20-alpine` | 5173 | Desarrollo (`vite dev`) | `packages/web/Dockerfile` |
-| `api-test` | `node:20-alpine` | 3001 | Test | mismo Dockerfile |
-| `web-test` | `node:20-alpine` | 5174 | Test | mismo Dockerfile |
+| `api` | `node:22-alpine` | 3000 | Desarrollo (`tsx watch`) | `packages/api/Dockerfile` |
+| `web` | `node:22-alpine` | 5173 | Desarrollo (`vite dev`) | `packages/web/Dockerfile` |
 
-### 1.2. Tamaño de imágenes
+### 1.2. Servicios — Producción
+
+| Servicio | Imagen Base | Puerto | Modo | Dockerfile |
+|----------|------------|--------|------|------------|
+| `db` | `postgres:16-alpine` | 5432 | Producción | — |
+| `api` | `node:22-alpine` | 3000 | Producción (`node` runtime) | `packages/api/Dockerfile.prod` |
+| `web` | `nginx:stable-alpine` | 8080:80 | Producción (nginx static) | `packages/web/Dockerfile.prod` |
+
+### 1.3. Tamaño de imágenes
 
 ```bash
-alentapp-api   1.02 GB    # node:20-alpine + devDependencies + tsx watch
-alentapp-web   570 MB     # node:20-alpine + devDependencies + vite
+# Desarrollo
+alentapp-api   1.02 GB    # node:22-alpine + devDependencies + tsx watch
+alentapp-web   570 MB     # node:22-alpine + devDependencies + vite
+
+# Producción (multi-stage)
+alentapp-api   ~250 MB    # Solo runtime + producción deps
+alentapp-web   ~50 MB     # nginx + static assets compilados
 ```
 
 ---
@@ -360,21 +374,22 @@ services:
 
 ---
 
-## 7. Resumen de Acciones
+## 7. Estado de Acciones
 
-| # | Acción | Prioridad | Esfuerzo | Impacto |
-|---|--------|-----------|----------|---------|
-| 1 | Multi-stage Dockerfile para API | 🔴 Crítica | 2h | Tamaño: 1.02GB → ~150MB |
-| 2 | Multi-stage Dockerfile para Web | 🔴 Crítica | 1h | Tamaño: 570MB → ~80MB |
-| 3 | Secrets management (.env) | 🔴 Crítica | 30min | Seguridad: contraseñas visibles |
-| 4 | .dockerignore completo | 🟡 Alta | 15min | Build context: 16MB → ~2MB |
-| 5 | Resource limits | 🟡 Alta | 15min | Estabilidad: evitar OOM |
-| 6 | Healthchecks en API/Web | 🟡 Alta | 30min | Orquestación: saber si está ready |
-| 7 | Usuario no-root | 🟡 Alta | 15min | Seguridad: contenedores |
-| 8 | Red personalizada | 🟡 Media | 15min | Aislamiento de red |
-| 9 | Logging config | 🟡 Media | 15min | Debugging en producción |
-| 10 | Labels organizativas | 🟢 Baja | 10min | Metadata para orquestadores |
-| 11 | GitHub Actions CI/CD | 🟢 Baja | 3h | Automatización de deploy |
-| 12 | Docker Compose profiles | 🟢 Baja | 30min | Separación dev/prod |
-| 13 | Read-only filesystem | 🟢 Baja | 15min | Seguridad |
-| 14 | Capabilities drop | 🟢 Baja | 10min | Seguridad |
+| # | Acción | Estado | Prioridad | Detalle |
+|---|--------|--------|-----------|---------|
+| 1 | Multi-stage Dockerfile para API | ✅ Completado | 🔴 Crítica | `Dockerfile.prod`: 3 stages (deps/build/runtime), ~250MB |
+| 2 | Multi-stage Dockerfile para Web | ✅ Completado | 🔴 Crítica | `Dockerfile.prod`: 3 stages (deps/build/nginx runtime), ~50MB |
+| 3 | Secrets management (.env) | ✅ Completado | 🔴 Crítica | Passwords via `.env`, vars con `:?error` en producción |
+| 4 | .dockerignore completo | ✅ Completado | 🟡 Alta | Excluye node_modules, .git, docs, scripts |
+| 5 | Resource limits | ✅ Completado | 🟡 Alta | Memory + CPU limits en todos los servicios |
+| 6 | Healthchecks en API/Web | ✅ Completado | 🟡 Alta | HTTP healthchecks con wget, interval 30s |
+| 7 | Usuario no-root | ✅ Completado | 🟡 Alta | `appuser` en API, `nginx` en web |
+| 8 | Red personalizada | ✅ Completado | 🟡 Media | `alentapp-production` interna |
+| 9 | Logging config | ✅ Completado | 🟡 Media | `json-file`, max-size 10m, max-file 3 |
+| 10 | Read-only filesystem | ✅ Completado | 🟢 Baja | `read_only: true` + tmpfs para /tmp |
+| 11 | Capabilities drop | ✅ Completado | 🟢 Baja | `cap_drop: ALL` + `cap_add: NET_BIND_SERVICE, CHOWN, SETUID, SETGID` |
+| 12 | Labels organizativas | ⬜ Pendiente | 🟢 Baja | Para futura iteración |
+| 13 | GitHub Actions CI/CD | ⬜ Pendiente | 🟢 Baja | Para futura iteración |
+| 14 | Docker Compose profiles | ⬜ Pendiente | 🟢 Baja | Separación dev/prod ya resuelta con archivos separados |
+| 15 | nginx read-only fs | ✅ Completado | 🟡 Media | `nginx-main.conf` con temp paths en /tmp (fix IPv6 healthcheck) |

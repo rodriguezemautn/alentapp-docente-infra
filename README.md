@@ -22,8 +22,9 @@ Plataforma moderna para la gestión de clubes y socios. Monorepo con **Arquitect
 - [Entornos](#entornos)
   - [Desarrollo](#1-desarrollo-make-dev)
   - [Testing](#2-testing-make-test)
-  - [Producción](#3-producción-make-prod)
-  - [Observabilidad](#4-observabilidad-make-obs)
+- [Producción](#3-producción-make-prod)
+- [Migraciones en producción](#4-migraciones-en-producción)
+- [Observabilidad](#5-observabilidad-make-obs)
 - [Comandos útiles](#comandos-útiles)
 - [Documentación](#documentación)
 - [Estructura del proyecto](#estructura-del-proyecto)
@@ -110,28 +111,43 @@ make prod-down    # Detener
 make prod-logs    # Logs
 make prod-check   # Verificar healthchecks
 make prod-build   # Reconstruir desde cero (--no-cache)
+make prod-migrate # Ejecutar migraciones Prisma (si se reseteó la DB)
+make prod-reset   # Reset completo: borra volúmenes + migra + seed
 ```
 
 | Servicio | URL | Dockerfile |
 |----------|-----|------------|
-| Frontend | `http://localhost:80` | `packages/web/Dockerfile.prod` (nginx) |
+| Frontend | `http://localhost:8080` | `packages/web/Dockerfile.prod` (nginx) |
 | API | `http://localhost:3000` | `packages/api/Dockerfile.prod` (node runtime) |
 | DB | `postgres://localhost:5432` | `postgres:16-alpine` |
 
 **Seguridad aplicada**:
 - ✅ Multi-stage builds (API < 300MB, Web < 170MB)
 - ✅ Usuario no-root (`appuser`)
-- ✅ `read_only: true` + `tmpfs` para /tmp y /var/cache/nginx
-- ✅ `cap_drop: ALL` + `cap_add: NET_BIND_SERVICE`
+- ✅ `read_only: true` + `tmpfs` para /tmp
+- ✅ `cap_drop: ALL` + `cap_add: NET_BIND_SERVICE, CHOWN, SETUID, SETGID`
 - ✅ `no-new-privileges: true`
 - ✅ Logging con rotación (`json-file`, max 10MB, 3 archivos)
 - ✅ Red interna aislada (`alentapp-production`)
 - ✅ Healthchecks en todos los servicios
 - ✅ Sin herramientas de build en runtime (no npm/tsc/python)
 
-### 4. Observabilidad (`make obs`)
+### 4. Migraciones en producción
 
-Stack profesional de observabilidad con 4 dashboards.
+Al resetear volúmenes de base de datos (`prod-reset`), las migraciones de Prisma se pierden. Ejecutar:
+
+```bash
+make prod-migrate    # Ejecuta migraciones (requiere DB corriendo)
+make seed            # Cargar datos de ejemplo
+```
+
+> ⚠️ **Nota**: El target `prod-reset` ejecuta `down -v` (borra volúmenes), levanta servicios, corre migraciones y seed automáticamente.
+
+---
+
+### 5. Observabilidad (`make obs`)
+
+Stack profesional de observabilidad con 4 dashboards. Las métricas se generan automáticamente vía hooks de Fastify en cada request (RED) más consultas periódicas a la DB cada 30s (Business).
 
 ```bash
 make obs          # Levantar stack (Prometheus + Grafana + Alertmanager + cAdvisor + node-exporter)
@@ -143,20 +159,31 @@ make obs-check    # Verificar estado
 | Herramienta | URL | Credenciales | Propósito |
 |-------------|-----|-------------|-----------|
 | **Grafana** | `http://localhost:3001` | `admin / admin` | Dashboards y alertas |
-| **Prometheus** | `http://localhost:9090` | — | Backend de métricas |
+| **Prometheus** | `http://localhost:9091` | — | Backend de métricas |
 | **Alertmanager** | `http://localhost:9093` | — | Gestión de alertas |
-| **cAdvisor** | `http://localhost:8080` | — | Métricas de contenedores (USE) |
+| **cAdvisor** | `http://localhost:8081` | — | Métricas de contenedores (USE) |
 | **node-exporter** | `http://localhost:9100` | — | Métricas del host |
-| **OTel endpoint** | `http://localhost:9464/metrics` | — | Métricas OpenTelemetry de la API |
+| **OTel endpoint** | `http://localhost:9464/metrics` | — | Métricas OpenTelemetry de la API (solo interno) |
+
+**Generación de métricas**: Las métricas se recolectan automáticamente vía:
+
+| Métrica | Fuente | Frecuencia |
+|---------|--------|------------|
+| `http_requests_total` | Fastify `onResponse` hook (por request) | Cada request |
+| `http_requests_errors_total` | Fastify `onResponse` hook (4xx/5xx) | Cada request |
+| `http_requests_active` | Fastify `onRequest/onResponse` | Cada request |
+| `http_request_duration` | Fastify `onResponse` hook (histograma) | Cada request |
+| `process_memory_usage` | Fastify `onResponse` hook | Cada request |
+| `business_*` (miembros, préstamos, ingresos) | Consulta periódica a DB | Cada 30s |
 
 **Dashboards disponibles en Grafana**:
 
-| Dashboard | Descripción | Paneles |
-|-----------|-------------|---------|
-| **RED — API** | Rendimiento de la API REST | Requests/s, error rate %, latencia p95/p99, status codes, memoria, top endpoints |
-| **USE — Infra** | Salud de infraestructura | CPU%, memoria%, disk I/O, network I/O, uptime |
-| **Business** | Métricas de negocio | Miembros activos, préstamos, ingresos/día, ocupación casilleros |
-| **UX — Frontend** | Experiencia de usuario | Tiempo de carga, errores cliente, Core Web Vitals simulados |
+| Dashboard | Descripción | Paneles | Fuente de datos |
+|-----------|-------------|---------|-----------------|
+| **RED — API** | Rendimiento de la API REST | Requests/s, error rate %, latencia p95/p99, status codes, memoria, top endpoints | OTel :9464 |
+| **USE — Infra** | Salud de infraestructura | CPU%, memoria%, disk I/O, network I/O, uptime | cAdvisor + node-exporter |
+| **Business** | Métricas de negocio | Miembros activos, préstamos, ingresos/día, ocupación casilleros | Consulta DB c/30s |
+| **UX — Frontend** | Experiencia de usuario | Tiempo de carga, errores cliente, Core Web Vitals simulados | OTel :9464 |
 
 **Alertas configuradas**:
 
@@ -182,6 +209,18 @@ make check       # typecheck + lint + test-ci
 # Datos
 make seed        # Cargar datos de ejemplo
 make seed-reset  # Reset DB + seed
+
+# Producción
+make prod                    # Construir y levantar
+make prod-down               # Detener
+make prod-migrate            # Ejecutar migraciones
+make prod-reset              # Reset completo
+make prod-check              # Verificar healthchecks
+
+# Observabilidad
+make obs                     # Levantar stack
+make obs-down                # Detener
+make obs-check               # Verificar estado
 
 # Release
 make release VERSION=v1.2.3    # Crear tag y push

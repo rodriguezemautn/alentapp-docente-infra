@@ -11,11 +11,17 @@
 # ============================================================
 
 SHELL := /bin/bash
-.PHONY: help dev dev-down dev-logs dev-rebuild \
-        test test-api test-web test-watch test-coverage test-report \
+.PHONY: help dev dev-down dev-logs dev-rebuild dev-reset \
+        dev-shell-api dev-shell-web dev-shell-db \
+        test test-api test-web test-watch test-watch-web \
+        test-unit test-integration test-e2e test-e2e-fullstack \
+        test-coverage test-report test-ci \
         prod prod-down prod-build prod-logs prod-check \
-        obs obs-up obs-down obs-logs obs-rebuild \
-        seed release clean
+        prod-shell prod-reset prod-migrate \
+        obs obs-down obs-logs obs-rebuild obs-check \
+        seed seed-reset \
+        lint typecheck format check clean \
+        release docker-save docker-tag info
 
 # ──────────────────────────────────────────────
 # HELP
@@ -158,7 +164,22 @@ prod-check: ## Verifica que todos los servicios estén healthy
 	@echo "🌐 API health:"
 	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:3000/ || echo "  ⚠️  API not reachable"
 	@echo "🌐 Web health:"
-	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:80/ || echo "  ⚠️  Web not reachable"
+	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:8080/ || echo "  ⚠️  Web not reachable"
+
+prod-reset: ## Reset completo: borra volúmenes, reconstruye, migra y carga seed
+	@echo "🔄 Resetting production environment..."
+	docker compose -f docker-compose.prod.yml down -v
+	docker compose -f docker-compose.prod.yml up -d
+	@echo "⏳ Waiting for DB to be ready..."
+	@sleep 10
+	$(MAKE) prod-migrate
+	@echo "✅ Production reset complete"
+
+prod-migrate: ## Ejecuta migraciones Prisma en producción (requiere DB corriendo)
+	@echo "🗄️  Running Prisma migrations..."
+	@DATABASE_URL="postgres://admin:${POSTGRES_PASSWORD}@localhost:5432/alentapp_db" \
+	  npx prisma migrate deploy --config packages/api/prisma.config.ts 2>&1 | grep -v "Update available"
+	@echo "✅ Migrations applied"
 
 # ──────────────────────────────────────────────
 # OBSERVABILIDAD
@@ -169,9 +190,9 @@ obs: ## Levanta stack de observabilidad (Prometheus + Grafana + Alertmanager + c
 	docker compose -f observability/docker-compose.obs.yml up -d
 	@echo ""
 	@echo "  📈 Grafana:     http://localhost:3001  (admin / admin)"
-	@echo "  📉 Prometheus:  http://localhost:9090"
+	@echo "  📉 Prometheus:  http://localhost:9091"
 	@echo "  🔔 Alertmanager: http://localhost:9093"
-	@echo "  🖥️  cAdvisor:    http://localhost:8080"
+	@echo "  🖥️  cAdvisor:    http://localhost:8081"
 	@echo "  💻 node-exporter: http://localhost:9100"
 	@echo ""
 
@@ -191,11 +212,11 @@ obs-check: ## Verifica estado del stack de observabilidad
 	@echo "📈 Grafana:"
 	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:3001/api/health || echo "  ⚠️  Grafana not reachable"
 	@echo "📉 Prometheus:"
-	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:9090/-/healthy || echo "  ⚠️  Prometheus not reachable"
+	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:9091/-/healthy || echo "  ⚠️  Prometheus not reachable"
 	@echo "🔔 Alertmanager:"
 	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:9093/-/healthy || echo "  ⚠️  Alertmanager not reachable"
 	@echo "🖥️  cAdvisor:"
-	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:8080/ || echo "  ⚠️  cAdvisor not reachable"
+	@curl -s -o /dev/null -w "  HTTP %{http_code}\n" http://localhost:8081/ || echo "  ⚠️  cAdvisor not reachable"
 
 # ──────────────────────────────────────────────
 # DATOS
