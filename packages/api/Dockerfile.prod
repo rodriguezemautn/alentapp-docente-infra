@@ -9,8 +9,9 @@ COPY package*.json ./
 COPY packages/api/package.json ./packages/api/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install production dependencies only, clean cache in same layer
-RUN npm ci --omit=dev --ignore-scripts && \
+# Install ONLY API production deps (no arrastra web: React, Chakra, etc.)
+# --workspace=packages/api instala SOLO api y shared (su dependencia)
+RUN npm ci --omit=dev --workspace=packages/api --ignore-scripts && \
     npm cache clean --force && \
     rm -rf \
         node_modules/typescript \
