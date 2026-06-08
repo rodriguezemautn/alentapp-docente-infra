@@ -1,14 +1,24 @@
 {
-  "title": "Alentapp UX — Frontend",
+  "title": "Alentapp UX \u2014 Frontend",
   "uid": "alentapp-ux-dashboard",
-  "description": "Métricas de experiencia de usuario: rendimiento frontend y API percibida",
-  "tags": ["alentapp", "frontend", "ux", "web-vitals"],
+  "description": "M\u00e9tricas de experiencia de usuario: rendimiento frontend y API percibida",
+  "tags": [
+    "alentapp",
+    "frontend",
+    "ux",
+    "web-vitals"
+  ],
   "timezone": "America/Argentina/Buenos_Aires",
   "panels": [
     {
       "title": "Latencia de API (experiencia del usuario)",
       "type": "graph",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "targets": [
         {
           "expr": "histogram_quantile(0.5, rate(http_request_duration_bucket[5m]))",
@@ -23,84 +33,115 @@
           "legendFormat": "p99"
         }
       ],
-      "description": "Latencia de API que percibe el usuario — p50, p95 y p99 en ms"
+      "description": "Latencia de API que percibe el usuario \u2014 p50, p95 y p99 en ms"
     },
     {
       "title": "Tasa de error del lado del cliente",
       "type": "graph",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "targets": [
         {
           "expr": "rate(http_requests_errors_total[5m]) / rate(http_requests_total[5m]) * 100",
           "legendFormat": "Error %"
         }
       ],
-      "description": "Porcentaje de errores — impacto directo en experiencia de usuario"
+      "description": "Porcentaje de errores \u2014 impacto directo en experiencia de usuario"
     },
     {
-      "title": "Simulación Core Web Vitals — LCP",
+      "title": "Simulaci\u00f3n Core Web Vitals \u2014 LCP",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 8 },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
       "targets": [
         {
           "expr": "histogram_quantile(0.75, rate(http_request_duration_bucket[5m]))",
           "legendFormat": "LCP simulado (ms)"
         }
       ],
-      "description": "Largest Contentful Paint simulado — basado en latencia p75 de API. En producción se reemplaza con RUM real.",
+      "description": "Largest Contentful Paint simulado \u2014 basado en latencia p75 de API. En producci\u00f3n se reemplaza con RUM real.",
       "thresholds": "2500,4000"
     },
     {
-      "title": "Simulación Core Web Vitals — INP",
+      "title": "Simulaci\u00f3n Core Web Vitals \u2014 INP",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 8 },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
       "targets": [
         {
           "expr": "histogram_quantile(0.95, rate(http_request_duration_bucket[5m]))",
           "legendFormat": "INP simulado (ms)"
         }
       ],
-      "description": "Interaction to Next Paint simulado — basado en latencia p95 de API.",
+      "description": "Interaction to Next Paint simulado \u2014 basado en latencia p95 de API.",
       "thresholds": "200,500"
     },
     {
-      "title": "Simulación Core Web Vitals — CLS",
+      "title": "Simulaci\u00f3n Core Web Vitals \u2014 CLS",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 8 },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
       "targets": [
         {
           "expr": "clamp_max(http_requests_active / 10, 1)",
           "legendFormat": "CLS simulado"
         }
       ],
-      "description": "Cumulative Layout Shift simulado (proxy). Requiere RUM real para medición precisa.",
+      "description": "Cumulative Layout Shift simulado (proxy). Requiere RUM real para medici\u00f3n precisa.",
       "thresholds": "0.1,0.25"
     },
     {
       "title": "Disponibilidad del servicio",
       "type": "stat",
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 14 },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
       "targets": [
         {
           "expr": "up{job=\"alentapp-api-otel\"}",
           "legendFormat": "API"
         }
       ],
-      "description": "1 = servicio arriba, 0 = caído"
+      "description": "1 = servicio arriba, 0 = ca\u00eddo"
     },
     {
-      "title": "Endpoints más lentos (p99)",
+      "title": "Endpoints m\u00e1s lentos (p99)",
       "type": "table",
-      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 14 },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 14
+      },
       "targets": [
         {
           "expr": "topk(5, histogram_quantile(0.99, rate(http_request_duration_bucket[5m])))",
           "legendFormat": "p99"
         }
       ],
-      "description": "Top 5 endpoints más lentos por latencia p99"
+      "description": "Top 5 endpoints m\u00e1s lentos por latencia p99"
     }
   ],
   "schemaVersion": 38,
-  "version": 1
+  "version": 1,
+  "editable": true
 }

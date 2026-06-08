@@ -5,8 +5,9 @@ providers:
     orgId: 1
     folder: 'Alentapp'
     type: file
-    disableDeletion: true
+    disableDeletion: false
     editable: true
+    allowUiUpdates: true
     updateIntervalSeconds: 30
     options:
       path: /etc/grafana/provisioning/dashboards

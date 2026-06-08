@@ -1,14 +1,23 @@
 {
-  "title": "Alentapp Business — Negocio",
+  "title": "Alentapp Business \u2014 Negocio",
   "uid": "alentapp-business-dashboard",
-  "description": "Métricas de negocio: socios activos, préstamos, ingresos y ocupación",
-  "tags": ["alentapp", "business", "negocio"],
+  "description": "M\u00e9tricas de negocio: socios activos, pr\u00e9stamos, ingresos y ocupaci\u00f3n",
+  "tags": [
+    "alentapp",
+    "business",
+    "negocio"
+  ],
   "timezone": "America/Argentina/Buenos_Aires",
   "panels": [
     {
       "title": "Socios activos",
       "type": "graph",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
       "targets": [
         {
           "expr": "business_members_active",
@@ -18,45 +27,65 @@
       "description": "Cantidad de socios activos actualmente en el club"
     },
     {
-      "title": "Préstamos activos",
+      "title": "Pr\u00e9stamos activos",
       "type": "graph",
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
       "targets": [
         {
           "expr": "business_loans_active",
-          "legendFormat": "Préstamos activos"
+          "legendFormat": "Pr\u00e9stamos activos"
         }
       ],
-      "description": "Cantidad de préstamos de equipamiento activos"
+      "description": "Cantidad de pr\u00e9stamos de equipamiento activos"
     },
     {
-      "title": "Ocupación de casilleros",
+      "title": "Ocupaci\u00f3n de casilleros",
       "type": "graph",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
       "targets": [
         {
           "expr": "business_lockers_occupancy",
-          "legendFormat": "Ocupación %"
+          "legendFormat": "Ocupaci\u00f3n %"
         }
       ],
-      "description": "Porcentaje de ocupación de casilleros"
+      "description": "Porcentaje de ocupaci\u00f3n de casilleros"
     },
     {
       "title": "Ingresos diarios (acumulado)",
       "type": "graph",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
       "targets": [
         {
           "expr": "rate(business_revenue_daily_total[24h])",
-          "legendFormat": "Ingresos/día"
+          "legendFormat": "Ingresos/d\u00eda"
         }
       ],
-      "description": "Ingresos acumulados del día"
+      "description": "Ingresos acumulados del d\u00eda"
     },
     {
       "title": "Resumen ejecutivo",
       "type": "stat",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
       "targets": [
         {
           "expr": "business_members_active",
@@ -64,16 +93,17 @@
         },
         {
           "expr": "business_loans_active",
-          "legendFormat": "Préstamos"
+          "legendFormat": "Pr\u00e9stamos"
         },
         {
           "expr": "business_lockers_occupancy",
-          "legendFormat": "Ocupación"
+          "legendFormat": "Ocupaci\u00f3n"
         }
       ],
-      "description": "Vista rápida del estado actual del negocio"
+      "description": "Vista r\u00e1pida del estado actual del negocio"
     }
   ],
   "schemaVersion": 38,
-  "version": 1
+  "version": 1,
+  "editable": true
 }
